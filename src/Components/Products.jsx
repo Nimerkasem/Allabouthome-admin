@@ -3,6 +3,7 @@ import firebase from "../servises/firbase";
 import { useNavigate } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import './Product.css'; 
 //add timeadded to every item
 
 const Products = () => {
@@ -375,26 +376,18 @@ const Products = () => {
 
 
     return (
-      <>
-        <div className="d-flex justify-content-around">
-          <Button onClick={toggleProductForm}>Add Product</Button>
-          <Button onClick={toggleLampForm}>Add Lamp</Button>
-        </div>
+        <>
+        <div className="button-containerp">
+        <Button  onClick={toggleProductForm}>Add Product</Button>
+            <br/>
+        <Button  >Home</Button>
+            <br/>
+        <Button  onClick={toggleLampForm}>Add Lamp</Button>
+            </div>
     
         {showProductForm && (
-          <Form
-            style={{
-              border: "2px solid #6600ff",
-              padding: "15px",
-              paddingTop: "20px",
-              marginTop: "50px",
-              width: "450px",
-              float: "left",
-              color: "#6600ff"
-            }}
-            onSubmit={handleProductFormSubmit}
-          >
-            <div className="d-flex justify-content-around">
+          <Form className='form' onSubmit={handleProductFormSubmit}>
+            <div >
               <h1>Add Product</h1>
             </div>
     
@@ -430,10 +423,10 @@ const Products = () => {
             </Form.Group>
     
             <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label style={{ marginTop: "20px" }}>Categories</Form.Label>
-              <Form style={{ width: "150px", marginLeft: "120px" }}>
+              <Form.Label >Categories</Form.Label>
+              <Form>
                 {['Living Room', 'Kitchen', 'Bedroom', 'Bathroom', 'Home Office', 'Laundry Room'].map((category) => (
-                  <div style={{ color: "#6600ff" }} key={category} className="mb-3">
+                  <div key={category} className="mb-3">
                     <Form.Check
                       type="checkbox"
                       label={category}
@@ -456,27 +449,17 @@ const Products = () => {
         )}
     
         {showLampForm && (
-          <Form
-            style={{
-              border: "2px solid #6600ff",
-              padding: "15px",
-              paddingTop: "20px",
-              marginTop: "50px",
-              width: "450px",
-              float: "left",
-              color: "#6600ff"
-            }}
-            onSubmit={handleLampFormSubmit}
-          >
-            <div className="d-flex justify-content-around">
+          <Form className='form' onSubmit={handleLampFormSubmit}>
+            
+            <div>
               <h1>Add Lamp</h1>
             </div>
     
-            <Form.Group className="mb-3" controlId="formBasicEmail">
+            <Form.Group className='form' controlId="formBasicEmail">
               <Form.Label>Lamp Name</Form.Label>
               <Form.Control type="text" required value={lampName} onChange={(e) => setLampName(e.target.value)} />
             </Form.Group>
-    
+
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Description</Form.Label>
               <Form.Control type="text" required value={lampDescription} onChange={(e) => setLampDescription(e.target.value)} />
@@ -505,9 +488,9 @@ const Products = () => {
     
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Categories</Form.Label>
-              <Form style={{ width: "150px", marginLeft: "120px" }}>
+              <Form >
                 {['Living Room', 'Kitchen', 'Bedroom', 'Bathroom', 'Home Office', 'Laundry Room'].map((category) => (
-                  <div style={{ color: "#6600ff" }} key={category} className="mb-3">
+                  <div key={category} className="mb-3">
                     <Form.Check
                       type="checkbox"
                       label={category}
@@ -539,19 +522,18 @@ const Products = () => {
           </Form>
         )}
     
-        <hr style={{ marginTop: "40px", marginBottom: "40px" }} />
     
-        <div style={{ width: "450px", float: "left" }}>
+        <div >
       <h2 >My Products</h2>
       {products.map((product) => (
-        <div style={{border: "3px solid #6600ff",height:"350px",marginLeft:"10px" ,marginTop:"20px", padding:"10px"}} key={product.name}>
+        <div key={product.name}>
           <h3>{product.name}</h3>
           <p>Description: {product.description}</p>
           <p>Price: {product.price}</p>
           <p>Quantity: {product.quantity}</p>
           <img style={{width:"150px",height:"150px"}} src={product.imageURL} alt={product.name} />
-          <Button style={{background:"#6600ff",marginLeft:"2px"}} variant="primary" onClick={() => handleEdit(product.id)}>Edit</Button>
-          <Button style={{background: "#6600ff", marginLeft: "2px"}} variant="primary" onClick={() => handleDelete(product.name, false)}>Delete</Button>
+          <Button  variant="primary" onClick={() => handleEdit(product.id)}>Edit</Button>
+          <Button  variant="primary" onClick={() => handleDelete(product.name, false)}>Delete</Button>
         </div>
       ))}
       </div>
@@ -559,10 +541,10 @@ const Products = () => {
 
 
 
-      <div style={{ marginLeft:"70PX", width:"450px",float:"left"}}> 
+      <div> 
       <h2>My Lamps</h2>
-  {lamps.map((lamp) => (
-    <div style={{ border: "3px solid #6600ff", height: "450px", marginLeft: "10px", marginTop: "10px", padding: "10px" }} key={lamp.name}>
+    {lamps.map((lamp) => (
+    <div key={lamp.name}>
       <h3>{lamp.name}</h3>
       <p>Description: {lamp.description}</p>
       <p>Price: {lamp.price}</p>
@@ -570,8 +552,8 @@ const Products = () => {
       <p>watt: {lamp.wattage}</p>
       <p>shade: {lamp.shade}</p>
       <img style={{ width: "150px", height: "150px" }} src={lamp.imageURL} alt={lamp.name} />
-      <Button style={{ background: "#6600ff", marginLeft: "2px" }} variant="primary" onClick={() => handleEdit(lamp.id)}>Edit</Button>
-      <Button style={{background: "#6600ff", marginLeft: "2px"}} variant="primary" onClick={() => handleDelete(lamp.name, true)}>Delete</Button>
+      <Button variant="primary" onClick={() => handleEdit(lamp.id)}>Edit</Button>
+      <Button  variant="primary" onClick={() => handleDelete(lamp.name, true)}>Delete</Button>
     </div>
   ))}
 </div>

@@ -51,18 +51,20 @@ export default function Register({ setUser }) {
     };
 
     return (
+      
       <div className="login-container" >
-
       <div className="para">
-        <h1 className="my-5 display-3 fw-bold ls-tight px-3">
+        <h1 className="my-5 display-3 fw-bold  ">
             The best offer <br />
-            <span className="text-primary">for your business</span>
+            <span className="text-primary">for your business</span><br />
+            Register Now!
         </h1>
 
         
       </div>
 
       <div className="register-form">
+      <h1 style={{color:"white"}}>ALL ABOUT HOME</h1>
       <Form onSubmit={registerUser} >
         <Form.Group className="mb-3" controlId="formBasicEmail">
           <Form.Control style={{ border:" 2px solid #593087"}} placeholder="Email address" type="text" onChange={(e) => setEmail(e.target.value)} />

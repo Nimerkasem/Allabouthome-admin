@@ -1,0 +1,29 @@
+
+.button-containerp {
+    display: flex;
+    align-items: center;
+    margin-top: 10px; 
+    border: 2px ;
+    width: 900px;
+    
+  }
+  
+  .button-containerp Button {
+    margin-bottom: 10px;
+    background-color: #2d0e4f;
+    border:  #1C0733;
+    width: 150px;
+    height: 100px;
+    margin-left: 120px;
+  }
+.form{
+    border: #1C0733;
+    padding: 15px;
+    width: 450px;
+    float: left;
+    color: white;
+    margin-left: 10px;
+    margin-top: 10px;
+    background-color: #1C0733;
+    font-family: 'Courier New', Courier, monospace;
+}

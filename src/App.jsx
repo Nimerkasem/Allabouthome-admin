@@ -20,7 +20,7 @@ function App() {
   console.log(user)
   return (
     <>
-    {/* <NavBar isLogedIn={isLogedIn} /> */}
+    {<NavBar isLogedIn={isLogedIn} /> }
     <AppRoutes Admins={Admins} setUser={setUser} user={user} isLogedIn={isLogedIn} setIslogedIn={setIslogedIn} />
     </>
   )

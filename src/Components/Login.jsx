@@ -46,11 +46,14 @@ export default function Login({ setUser, setIslogedIn }) {
           <Form.Group className="mb-3" controlId="formBasicPassword">
             <Form.Control style={{ border:" 2px solid #593087"}}  placeholder="Enter your Password" type="password" onChange={(e) => setPassword(e.target.value)} />
           </Form.Group>
-          <div className="button-container">
+          <div className="button-containerl">
             <Button variant="primary" type="submit">
              Login
             </Button>
-            <Button variant="primary" type="submit">
+            <br/>
+            <Button variant="primary" type="submit" onClick={()=>{
+              navigate('/Register');
+            }}>
              I don't have an account? Register
             </Button>
           </div>

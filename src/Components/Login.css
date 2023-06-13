@@ -24,7 +24,7 @@
     padding: 50px;
     padding-top: 150px;
   }
-  .button-container {
+  .button-container1 {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -32,9 +32,9 @@
     
   }
   
-  .button-container Button {
+  .button-containerl Button {
     margin-bottom: 10px;
-    background-color: #1C0733;
+    background-color: #2d0e4f;
     border:  #1C0733;;
   }
   
