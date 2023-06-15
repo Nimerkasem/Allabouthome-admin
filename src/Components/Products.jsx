@@ -270,7 +270,7 @@ const Products = () => {
         name: productName,
         description: productDescription,
         price: productPrice,
-        quantity: productQuantity,
+        quantity: parseInt(productQuantity),
         imageURL: '',
         categories: productCategories,
       };
@@ -321,7 +321,7 @@ const Products = () => {
         name: lampName,
         description: lampDescription,
         price: lampPrice,
-        quantity: lampQuantity,
+        quantity: parseInt(lampQuantity),
         imageURL: '',
         categories: lampCategories,
         wattage: lampWattage,
