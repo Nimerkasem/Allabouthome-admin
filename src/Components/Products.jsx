@@ -380,8 +380,12 @@ const Products = () => {
         <div className="button-containerp">
         <Button  onClick={toggleProductForm}>Add Product</Button>
             <br/>
-        <Button  >Home</Button>
-            <br/>
+        <Button variant="primary" type="submit" onClick={()=>{
+          navigate('/home');
+        }}>
+          Home
+        </Button>
+      <br/>
         <Button  onClick={toggleLampForm}>Add Lamp</Button>
             </div>
     
@@ -526,8 +530,8 @@ const Products = () => {
         <div >
       <h2 >My Products</h2>
       {products.map((product) => (
-        <div key={product.name}>
-          <h3>{product.name}</h3>
+        <div class='product' key={product.name}>
+          <h1>{product.name}</h1>
           <p>Description: {product.description}</p>
           <p>Price: {product.price}</p>
           <p>Quantity: {product.quantity}</p>
@@ -537,22 +541,18 @@ const Products = () => {
         </div>
       ))}
       </div>
-
-
-
-
-      <div> 
+      <div > 
       <h2>My Lamps</h2>
     {lamps.map((lamp) => (
-    <div key={lamp.name}>
-      <h3>{lamp.name}</h3>
+    <div class='lamp' key={lamp.name}>
+      <h1>{lamp.name}</h1>
       <p>Description: {lamp.description}</p>
       <p>Price: {lamp.price}</p>
       <p>Quantity: {lamp.quantity}</p>
       <p>watt: {lamp.wattage}</p>
       <p>shade: {lamp.shade}</p>
       <img style={{ width: "150px", height: "150px" }} src={lamp.imageURL} alt={lamp.name} />
-      <Button variant="primary" onClick={() => handleEdit(lamp.id)}>Edit</Button>
+      <Button  variant="primary" onClick={() => handleEdit(lamp.id)}>Edit</Button>
       <Button  variant="primary" onClick={() => handleDelete(lamp.name, true)}>Delete</Button>
     </div>
   ))}

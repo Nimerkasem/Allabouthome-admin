@@ -93,9 +93,12 @@ export default function Register({ setUser }) {
             <Button variant="primary" type="submit">
              Register
             </Button>
-            <Button variant="primary" type="submit">
+            <Button variant="primary" type="submit" onClick={()=>{
+              navigate('/');
+            }}>
              Already have an account? Login.
             </Button>
+          
           </div>
       </Form>
     </div>
