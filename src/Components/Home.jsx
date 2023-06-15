@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import './Home.css'; 
+import '../Css/Home.css'; 
 import Button from 'react-bootstrap/Button';
 import { Image } from 'react-bootstrap';
 import userimg from '../assets/userimg.png';
@@ -21,7 +21,7 @@ export default function Home({user}) {
           <Link to="/Products">Manage Products</Link>
         </Button>
         <Button style={{background:"white"}} variant="primary" size="lg" active>
-          <Link to="/Products">SignOut</Link>
+          <Link to="/">SignOut</Link>
         </Button>
       </div>
       

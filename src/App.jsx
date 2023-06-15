@@ -1,9 +1,6 @@
 import { useState , useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import firebase from './servises/firbase';
-import NavBar from './Components/NavBar';
 import AppRoutes from './Components/AppRoutes';
 
 function App() {
@@ -20,7 +17,7 @@ function App() {
   console.log(user)
   return (
     <>
-    {<NavBar isLogedIn={isLogedIn} /> }
+   
     <AppRoutes Admins={Admins} setUser={setUser} user={user} isLogedIn={isLogedIn} setIslogedIn={setIslogedIn} />
     </>
   )

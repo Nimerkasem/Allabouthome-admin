@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import firebase from "../servises/firbase";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import './Login.css'; 
+import '../Css/Login.css'; 
 import { Image } from 'react-bootstrap';
 import logo from '../assets/logo.png';
 

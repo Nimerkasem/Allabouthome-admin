@@ -3,7 +3,8 @@ import firebase from "../servises/firbase";
 import { useNavigate } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import './Product.css'; 
+import ListGroup from 'react-bootstrap/ListGroup';
+import '../Css/Product.css';
 //add timeadded to every item
 
 const Products = () => {
@@ -377,6 +378,11 @@ const Products = () => {
 
     return (
         <>
+
+<ListGroup style={{border:"red"}}>
+
+  <ListGroup.Item>
+
         <div className="button-containerp">
         <Button  onClick={toggleProductForm}>Add Product</Button>
             <br/>
@@ -388,7 +394,8 @@ const Products = () => {
       <br/>
         <Button  onClick={toggleLampForm}>Add Lamp</Button>
             </div>
-    
+  </ListGroup.Item>
+  <ListGroup.Item>
         {showProductForm && (
           <Form className='form' onSubmit={handleProductFormSubmit}>
             <div >
@@ -451,7 +458,7 @@ const Products = () => {
             <Button variant="primary" type="submit">Add Product</Button>
           </Form>
         )}
-    
+
         {showLampForm && (
           <Form className='form' onSubmit={handleLampFormSubmit}>
             
@@ -459,7 +466,7 @@ const Products = () => {
               <h1>Add Lamp</h1>
             </div>
     
-            <Form.Group className='form' controlId="formBasicEmail">
+            <Form.Group className='mb-3' controlId="formBasicEmail">
               <Form.Label>Lamp Name</Form.Label>
               <Form.Control type="text" required value={lampName} onChange={(e) => setLampName(e.target.value)} />
             </Form.Group>
@@ -525,10 +532,12 @@ const Products = () => {
             <Button variant="primary" type="submit">Add Lamp</Button>
           </Form>
         )}
-    
-    
-        <div >
-      <h2 >My Products</h2>
+</ListGroup.Item>  
+<ListGroup.Item>
+        
+   
+      <div >
+        <h1 class="h">My Products</h1>
       {products.map((product) => (
         <div class='product' key={product.name}>
           <h1>{product.name}</h1>
@@ -536,13 +545,16 @@ const Products = () => {
           <p>Price: {product.price}</p>
           <p>Quantity: {product.quantity}</p>
           <img style={{width:"150px",height:"150px"}} src={product.imageURL} alt={product.name} />
-          <Button  variant="primary" onClick={() => handleEdit(product.id)}>Edit</Button>
+          <Button class='button' variant="primary" onClick={() => handleEdit(product.id)}>Edit</Button>
           <Button  variant="primary" onClick={() => handleDelete(product.name, false)}>Delete</Button>
         </div>
       ))}
       </div>
+  </ListGroup.Item>
+  <ListGroup.Item>
       <div > 
-      <h2>My Lamps</h2>
+      <h1 class="h">My Lamps</h1>
+
     {lamps.map((lamp) => (
     <div class='lamp' key={lamp.name}>
       <h1>{lamp.name}</h1>
@@ -557,9 +569,8 @@ const Products = () => {
     </div>
   ))}
 </div>
-
-
-
+</ListGroup.Item>
+</ListGroup >
 
     </>
 
