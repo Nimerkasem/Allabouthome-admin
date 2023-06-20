@@ -243,7 +243,7 @@ const Products = () => {
           // Delete the corresponding image from storage
           const storage = firebase.storage();
           const adminUid = currentUser.uid;
-          const imagePath = `admin/${adminUid}/${directory}/${itemId}`;
+          const imagePath = `admins/${adminUid}/${directory}/${itemId}`;
     
           await storage.ref().child(imagePath).delete();
         }
@@ -270,7 +270,7 @@ const Products = () => {
       const newProduct = {
         name: productName,
         description: productDescription,
-        price: productPrice,
+        price: parseInt(productPrice),
         quantity: parseInt(productQuantity),
         imageURL: '',
         categories: productCategories,
@@ -321,12 +321,12 @@ const Products = () => {
       const newLamp = {
         name: lampName,
         description: lampDescription,
-        price: lampPrice,
+        price: parseInt(lampPrice),
         quantity: parseInt(lampQuantity),
         imageURL: '',
         categories: lampCategories,
-        wattage: lampWattage,
-        shade: lampShade,
+        wattage: parseInt(lampWattage),
+        shade:parseInt(lampShade),
       };
     
       try {
