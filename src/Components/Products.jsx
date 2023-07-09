@@ -55,9 +55,9 @@ const Products = () => {
         updatedTime: currentTime,
       };
   
-      // Add the product to the products collection and return the reference
+     
       const productRef = await db.collection('allproducts').add(productData);
-  
+      await productRef.update({ uid: productRef.id });
       console.log('Product added to products collection successfully!');
   
       return productRef;
@@ -108,11 +108,9 @@ const Products = () => {
         const currentUser = firebase.auth().currentUser;
         const adminUID = currentUser.uid;
         const currentTime = firebase.firestore.FieldValue.serverTimestamp();
-        // ...
         const adminSnapshot = await db.collection('Admins').doc(adminUID).get();
         const adminData = adminSnapshot.data();
         const adminName = adminData.name;
-        // Add the lamp to the lamps collection and return the reference
         const lampRef = await db.collection('alllamps').add({
           ...lamp,
           adminUID: adminUID,
@@ -120,7 +118,7 @@ const Products = () => {
           addedTime: currentTime,
           updatedTime: currentTime,
         });
-    
+        await lampRef.update({ uid: lampRef.id });
         console.log('Lamp added to lamps collection successfully!');
     
         return lampRef;
@@ -141,7 +139,7 @@ const Products = () => {
     };
     
     const [adminName, setAdminName] = useState('');
-
+    const [lampUIDs , setLampUIDs] = useState([]);
     useEffect(() => {
       const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
         if (user) {
@@ -150,6 +148,7 @@ const Products = () => {
     
           const adminUnsubscribe = adminDocRef.onSnapshot((docSnapshot) => {
             const data = docSnapshot.data();
+            console.log("data",data);
             if (data && data.lamps) {
               const updatedLamps = data.lamps.map((lamp) => {
                 // Check if the lamp has an image and update the imageURL property
@@ -158,9 +157,13 @@ const Products = () => {
                 }
                 return lamp;
               });
+              // Retrieve the UID for lamps
+              const lampUIDs = data.lamps.map((lamp) => lamp.uid);
     
               setProducts(data.products || []);
               setLamps(updatedLamps || []);
+              // Set the UID for lamps in the state
+              setLampUIDs(lampUIDs);
             }
             if (data && data.adminName) {
               setAdminName(data.adminName);
@@ -174,6 +177,7 @@ const Products = () => {
           // Handle the case when the user is not logged in
           setProducts([]);
           setLamps([]);
+          setLampUIDs([]);
           setAdminName('');
         }
       });
@@ -182,6 +186,7 @@ const Products = () => {
         unsubscribe();
       };
     }, []);
+    
     
     
    
@@ -369,10 +374,8 @@ const Products = () => {
       }
     };
     
-    
 
-
-
+console.log(lampUIDs);
 
 
 
@@ -525,16 +528,21 @@ const Products = () => {
             </Form.Group>
     
             <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Shade</Form.Label>
-              <Form.Control type="text" required value={lampShade} onChange={(e) => setLampShade(e.target.value)} />
-            </Form.Group>
+  <Form.Label>Shade</Form.Label>
+  <Form.Control as="select" required value={lampShade} onChange={(e) => setLampShade(e.target.value)}>
+    <option value="3000">3000</option>
+    <option value="4000">4000</option>
+    <option value="6000">6000</option>
+  </Form.Control>
+</Form.Group>
+
     
             <Button variant="primary" type="submit">Add Lamp</Button>
           </Form>
         )}
 </ListGroup.Item>  
 <ListGroup.Item>
-        
+
    
       <div >
         <h1 class="h">My Products</h1>
@@ -546,7 +554,7 @@ const Products = () => {
           <p>Quantity: {product.quantity}</p>
           <img style={{width:"150px",height:"150px"}} src={product.imageURL} alt={product.name} />
           <Button class='button' variant="primary" onClick={() => handleEdit(product.id)}>Edit</Button>
-          <Button  variant="primary" onClick={() => handleDelete(product.name, false)}>Delete</Button>
+          <Button  variant="primary" onClick={() => handleDelete(product.id, false)}>Delete</Button>
         </div>
       ))}
       </div>
