@@ -7,7 +7,6 @@ import ListGroup from "react-bootstrap/ListGroup";
 import "../Css/Product.css";
 import { Modal } from "react-bootstrap";
 
-//add timeadded to every item
 
 const Products = () => {
   const [productName, setProductName] = useState("");
@@ -88,7 +87,6 @@ const Products = () => {
         .get();
       const existingCategoryIds = existingCategories.docs.map((doc) => doc.id);
 
-      // Create and update category documents if they don't exist
       const newCategories = categories.filter(
         (category) => !existingCategoryIds.includes(category)
       );
@@ -97,7 +95,6 @@ const Products = () => {
         batch.set(newCategoryRef, { items: [itemId] });
       });
 
-      // Update existing category documents
       existingCategories.forEach((doc) => {
         const categoryRef = categoriesRef.doc(doc.id);
         batch.update(categoryRef, {
@@ -159,18 +156,15 @@ const Products = () => {
           console.log("data", data);
           if (data && data.lamps) {
             const updatedLamps = data.lamps.map((lamp) => {
-              // Check if the lamp has an image and update the imageURL property
               if (lamp.imageURL) {
                 return { ...lamp, imageURL: lamp.imageURL };
               }
               return lamp;
             });
-            // Retrieve the UID for lamps
             const lampUIDs = data.lamps.map((lamp) => lamp.uid);
 
             setProducts(data.products || []);
             setLamps(updatedLamps || []);
-            // Set the UID for lamps in the state
             setLampUIDs(lampUIDs);
           }
           if (data && data.adminName) {
@@ -182,7 +176,6 @@ const Products = () => {
           adminUnsubscribe();
         };
       } else {
-        // Handle the case when the user is not logged in
         setProducts([]);
         setLamps([]);
         setLampUIDs([]);
@@ -206,33 +199,27 @@ const Products = () => {
       let directory = "";
 
       if (isLamp) {
-        // Retrieve the lamps array from the admin document
         const adminSnapshot = await adminDocRef.get();
         const adminData = adminSnapshot.data();
         const lampsArray = adminData.lamps || [];
 
-        // Find the lamp object with matching itemId
         const lamp = lampsArray.find((lamp) => lamp.itemId === itemId);
 
         if (lamp) {
           imageURL = lamp.imageURL;
           directory = "lamps";
 
-          // Delete the lamp from the admin's lamps array
           await adminDocRef.update({
             lamps: firebase.firestore.FieldValue.arrayRemove(lamp),
           });
         }
 
-        // Delete the lamp from the 'alllamps' collection
         await db.collection("alllamps").doc(itemId).delete();
       } else {
-        // Retrieve the products array from the admin document
         const adminSnapshot = await adminDocRef.get();
         const adminData = adminSnapshot.data();
         const productsArray = adminData.products || [];
 
-        // Find the product object with matching itemId
         const product = productsArray.find(
           (product) => product.itemId === itemId
         );
@@ -241,19 +228,16 @@ const Products = () => {
           imageURL = product.imageURL;
           directory = "products";
 
-          // Delete the product from the admin's products array
           await adminDocRef.update({
             products: firebase.firestore.FieldValue.arrayRemove(product),
           });
         }
 
-        // Delete the product from the 'allproducts' collection
         await db.collection("allproducts").doc(itemId).delete();
         console.log("proudct deleted");
       }
 
       if (imageURL) {
-        // Delete the corresponding image from storage
         const storage = firebase.storage();
         const adminUid = currentUser.uid;
         const imagePath = `admins/${adminUid}/${directory}/${itemId}`;
@@ -261,8 +245,7 @@ const Products = () => {
         await storage.ref().child(imagePath).delete();
       }
 
-      // Delete the item from categories
-      // await removeFromCategories(itemId);
+      
 
       console.log("Item deleted successfully!");
     } catch (error) {
@@ -276,13 +259,11 @@ const Products = () => {
     setShowProductEditModal(true);
   };
 
-  // Function to handle opening the lamp edit modal
   const openLampEditModal = (lamp) => {
     setSelectedLamp(lamp);
     setShowLampEditModal(true);
   };
 
-  // Function to handle closing the edit modals
   const closeEditModals = () => {
     setShowProductEditModal(false);
     setShowLampEditModal(false);
@@ -291,7 +272,6 @@ const Products = () => {
   const handleProductFormSubmit = async (e) => {
     e.preventDefault();
 
-    // Create a new product object
     const newProduct = {
       name: productName,
       description: productDescription,
@@ -299,11 +279,10 @@ const Products = () => {
       quantity: parseInt(productQuantity),
       imageURL: "",
       categories: productCategories,
-      uid: "", // Initialize UID as an empty string
+      uid: "", 
     };
 
     try {
-      // Get the current admin's Firestore collection reference
       const currentUser = firebase.auth().currentUser;
       const adminCollectionRef = firebase.firestore().collection("Admins");
       const adminDocRef = adminCollectionRef.doc(currentUser.uid);
@@ -318,23 +297,20 @@ const Products = () => {
         newProduct.imageURL = downloadURL;
       }
 
-      // Add the new product to the admin's collection as an array list
       const adminSnapshot = await adminDocRef.get();
       const adminData = adminSnapshot.data();
-      const productsArray = adminData.products || []; // Retrieve the existing products array or initialize it as an empty array
-      const productRef = await addProductToCollection(newProduct); // Add the product to the 'allproducts' collection and get its reference
-      const productUID = productRef.id; // Retrieve the UID of the added product
-      newProduct.uid = productUID; // Update the newProduct object with the UID
-      productsArray.push(newProduct); // Add the updated newProduct object to the products array
+      const productsArray = adminData.products || []; 
+      const productRef = await addProductToCollection(newProduct); 
+      const productUID = productRef.id; 
+      newProduct.uid = productUID; 
+      productsArray.push(newProduct); 
 
-      // Update the admin's collection with the updated products array
       await adminDocRef.update({
         products: productsArray,
       });
 
       await addToCategory(productUID, productCategories);
 
-      // Reset the form fields
       setProductName("");
       setProductDescription("");
       setProductPrice("");
@@ -351,7 +327,6 @@ const Products = () => {
   const handleLampFormSubmit = async (e) => {
     e.preventDefault();
 
-    // Create a new lamp object
     const newLamp = {
       name: lampName,
       description: lampDescription,
@@ -364,7 +339,6 @@ const Products = () => {
     };
 
     try {
-      // Get the current admin's Firestore collection reference
       const currentUser = firebase.auth().currentUser;
       const adminCollectionRef = firebase.firestore().collection("Admins");
       const adminDocRef = adminCollectionRef.doc(currentUser.uid);
@@ -380,7 +354,6 @@ const Products = () => {
         newLamp.imageURL = downloadURL;
       }
 
-      // Add the new lamp to the admin's collection as an array list
       await adminDocRef.update({
         lamps: firebase.firestore.FieldValue.arrayUnion(newLamp),
       });
@@ -388,7 +361,6 @@ const Products = () => {
       const lampRef = await addLampToCollection(newLamp);
       await addToCategory(lampRef.id, lampCategories);
 
-      // Reset the form fields
       setLampName("");
       setLampDescription("");
       setLampPrice("");
@@ -424,8 +396,8 @@ const Products = () => {
         });
   
         await db.collection("alllamps").doc(selectedLamp.itemId).update(updatedLamp);
-        setSelectedLamp(null); // Reset selectedLamp
-      setShowLampEditModal(false); // Close the edit modal
+        setSelectedLamp(null); 
+      setShowLampEditModal(false); 
         console.log("Lamp updated successfully!");
       } else {
         console.error("Lamp not found in the admin's lamps array.");
@@ -454,8 +426,8 @@ const Products = () => {
         await adminDocRef.update({
           products: productsArray,
         });
-        setSelectedProduct(null); // Reset selectedProduct
-        setShowProductEditModal(false); // Close the edit modal
+        setSelectedProduct(null); 
+        setShowProductEditModal(false); 
         await db.collection("allproducts").doc(selectedProduct.itemId).update(updatedProduct);
         console.log("Product updated successfully!");
       } else {
@@ -796,14 +768,12 @@ const Products = () => {
         </ListGroup.Item>
       </ListGroup>
       {showProductEditModal && selectedProduct && (
-        // Product Edit Modal
         <Modal show={showProductEditModal} onHide={closeEditModals}>
           <Modal.Header closeButton>
             <Modal.Title>Edit Product</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {/* Add the form fields and logic to edit the product */}
-            {/* For example: */}
+         
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Product Name</Form.Label>
               <Form.Control
@@ -853,7 +823,6 @@ const Products = () => {
               
               
             </Form.Group>
-            {/* Add other form fields for editing other properties */}
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={closeEditModals}>
@@ -869,14 +838,12 @@ const Products = () => {
         </Modal>
       )}
       {showLampEditModal && selectedLamp && (
-        // Lamp Edit Modal
         <Modal show={showLampEditModal} onHide={closeEditModals}>
           <Modal.Header closeButton>
             <Modal.Title>Edit Lamp</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {/* Add the form fields and logic to edit the lamp */}
-            {/* For example: */}
+      
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Lamp Name</Form.Label>
               <Form.Control
@@ -946,7 +913,6 @@ const Products = () => {
                 }
               />
             </Form.Group>
-            {/* Add other form fields for editing other properties */}
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={closeEditModals}>

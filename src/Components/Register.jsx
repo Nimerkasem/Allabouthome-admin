@@ -25,14 +25,11 @@ export default function Register({ setUser }) {
         }
 
         try {
-            // create user with Firebase Authentication
             const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
             const user = userCredential.user;
 
-            // create a reference to the user's document in Firestore
             const userDocRef = firebase.firestore().collection('Admins').doc(user.uid);
 
-            // set the user's data in Firestore
             const newUser = {
                 phoneNumber,
                 email,
