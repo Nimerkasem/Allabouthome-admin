@@ -194,75 +194,80 @@ const Products = () => {
       const currentUser = firebase.auth().currentUser;
       const adminCollectionRef = firebase.firestore().collection("Admins");
       const adminDocRef = adminCollectionRef.doc(currentUser.uid);
-
+  
       let imageURL = "";
       let directory = "";
-
+  
       if (isLamp) {
         const adminSnapshot = await adminDocRef.get();
         const adminData = adminSnapshot.data();
         const lampsArray = adminData.lamps || [];
-
+  
         const lamp = lampsArray.find((lamp) => lamp.itemId === itemId);
+  
+        console.log('lampsArray', lampsArray);
+        console.log("lamp", lamp);
 
         if (lamp) {
           imageURL = lamp.imageURL;
           directory = "lamps";
-
+  
           await adminDocRef.update({
             lamps: firebase.firestore.FieldValue.arrayRemove(lamp),
           });
+  
+          await db.collection("alllamps").doc(itemId).delete();
+          console.log("lamp deleted");
         }
-
-        await db.collection("alllamps").doc(itemId).delete();
       } else {
         const adminSnapshot = await adminDocRef.get();
         const adminData = adminSnapshot.data();
         const productsArray = adminData.products || [];
-
+  
         const product = productsArray.find(
           (product) => product.itemId === itemId
         );
-
+  
         if (product) {
           imageURL = product.imageURL;
           directory = "products";
-
+  
           await adminDocRef.update({
             products: firebase.firestore.FieldValue.arrayRemove(product),
           });
+  
+          await db.collection("allproducts").doc(product.uid).delete();
+          console.log("product deleted");
         }
-
-        await db.collection("allproducts").doc(itemId).delete();
-        console.log("proudct deleted");
       }
-
+  
       if (imageURL) {
         const storage = firebase.storage();
         const adminUid = currentUser.uid;
         const imagePath = `admins/${adminUid}/${directory}/${itemId}`;
-
+  
         await storage.ref().child(imagePath).delete();
       }
-
-      
-
+  
       console.log("Item deleted successfully!");
     } catch (error) {
       console.error("Error deleting item:", error);
       Products.reset;
     }
   };
+  
 
   const openProductEditModal = (product) => {
-    setSelectedProduct(product);
     setShowProductEditModal(true);
+    setSelectedProduct(product);
   };
+  
 
   const openLampEditModal = (lamp) => {
-    setSelectedLamp(lamp);
     setShowLampEditModal(true);
+    setSelectedLamp(lamp);
   };
+  
 
   const closeEditModals = () => {
     setShowProductEditModal(false);
@@ -336,6 +341,7 @@ const Products = () => {
       categories: lampCategories,
       wattage: parseInt(lampWattage),
       shade: parseInt(lampShade),
+      uid: "",
     };
 
     try {
@@ -354,13 +360,27 @@ const Products = () => {
         newLamp.imageURL = downloadURL;
       }
 
-      await adminDocRef.update({
+      /*await adminDocRef.update({
         lamps: firebase.firestore.FieldValue.arrayUnion(newLamp),
       });
 
       const lampRef = await addLampToCollection(newLamp);
       await addToCategory(lampRef.id, lampCategories);
-
+*/
+      const adminSnapshot = await adminDocRef.get();
+      const adminData = adminSnapshot.data();
+      const lampsArray = adminData.lamps || []; 
+      const lampRef = await addLampToCollection(newLamp);
+      const lampUID = lampRef.id; 
+      newLamp.uid = lampUID;
+      lampsArray.push(newLamp);
+      
+      await adminDocRef.update({
+        lamps: lampsArray,
+      });
+      
+      await addToCategory(lampUID, lampCategories);
+      
       setLampName("");
       setLampDescription("");
       setLampPrice("");
@@ -385,10 +405,21 @@ const Products = () => {
       const adminData = adminSnapshot.data();
       const lampsArray = adminData.lamps || [];
   
-      const lampIndex = lampsArray.findIndex((lamp) => lamp.itemId === selectedLamp.itemId);
+      const lampIndex = lampsArray.findIndex(
+        (lamp) => lamp.itemId === selectedLamp.itemId
+      );
   
       if (lampIndex !== -1) {
-        const updatedLamp = { ...lampsArray[lampIndex], ...updatedLampData };
+        const updatedLamp = {
+          ...lampsArray[lampIndex],
+          name: updatedLampData.name,
+          description: updatedLampData.description,
+          price: updatedLampData.price,
+          quantity: updatedLampData.quantity,
+          wattage: updatedLampData.wattage,
+          shade: updatedLampData.shade,
+        };
+  
         lampsArray[lampIndex] = updatedLamp;
   
         await adminDocRef.update({
@@ -396,8 +427,10 @@ const Products = () => {
         });
   
         await db.collection("alllamps").doc(selectedLamp.itemId).update(updatedLamp);
-        setSelectedLamp(null); 
-      setShowLampEditModal(false); 
+  
+        setSelectedLamp(null);
+        setShowLampEditModal(false);
+  
         console.log("Lamp updated successfully!");
       } else {
         console.error("Lamp not found in the admin's lamps array.");
@@ -406,6 +439,8 @@ const Products = () => {
       console.error("Error updating lamp:", error);
     }
   };
+  
+
   
   const handleProductEdit = async (updatedProductData) => {
     try {
@@ -417,18 +452,30 @@ const Products = () => {
       const adminData = adminSnapshot.data();
       const productsArray = adminData.products || [];
   
-      const productIndex = productsArray.findIndex((product) => product.itemId === selectedProduct.itemId);
+      const productIndex = productsArray.findIndex(
+        (product) => product.itemId === selectedProduct.itemId
+      );
   
       if (productIndex !== -1) {
-        const updatedProduct = { ...productsArray[productIndex], ...updatedProductData };
+        const updatedProduct = {
+          ...productsArray[productIndex],
+          name: updatedProductData.name,
+          description: updatedProductData.description,
+          price: updatedProductData.price,
+          quantity: updatedProductData.quantity,
+        };
+  
         productsArray[productIndex] = updatedProduct;
   
         await adminDocRef.update({
           products: productsArray,
         });
-        setSelectedProduct(null); 
-        setShowProductEditModal(false); 
+  
         await db.collection("allproducts").doc(selectedProduct.itemId).update(updatedProduct);
+  
+        setSelectedProduct(null);
+        setShowProductEditModal(false);
+  
         console.log("Product updated successfully!");
       } else {
         console.error("Product not found in the admin's products array.");
@@ -439,20 +486,20 @@ const Products = () => {
   };
   
   
-  const handleEdit = (itemId) => {
-    const product = products.find((p) => p.id === itemId);
+  
+  const handleEdit = (itemId, isLamp) => {
+    const product = products.find((p) => p.itemId === itemId);
     if (product) {
-      setSelectedProduct(product);
-      setShowProductEditModal(true);
-    } else {
-      const lamp = lamps.find((l) => l.id === itemId);
+      openProductEditModal(product);
+    } else if (isLamp) {
+      const lamp = lamps.find((l) => l.itemId === itemId);
       if (lamp) {
-        setSelectedLamp(lamp);
-        setShowLampEditModal(true);
+        openLampEditModal(lamp);
       }
     }
   };
-
+  
+  
   return (
     <>
       <ListGroup style={{ border: "red" }}>
@@ -684,20 +731,29 @@ const Products = () => {
                   onChange={(e) => setLampWattage(e.target.value)}
                 />
               </Form.Group>
-
               <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Label>Shade</Form.Label>
-                <Form.Control
-                  as="select"
-                  required
-                  value={lampShade}
-                  onChange={(e) => setLampShade(e.target.value)}
-                >
-                  <option value="3000">3000</option>
-                  <option value="4000">4000</option>
-                  <option value="6000">6000</option>
-                </Form.Control>
-              </Form.Group>
+  <Form.Label>Shade</Form.Label>
+  <Form.Control
+    as="select"
+    required
+    value={isNaN(lampShade) ? "" : lampShade}
+    onChange={(e) => {
+      const selectedValue = e.target.value;
+      if (!isNaN(selectedValue)) {
+        setLampShade(selectedValue);
+      } else {
+        setLampShade(""); // Reset to empty string if NaN or non-numeric value is selected
+      }
+    }}
+  >
+    <option value="">Select Shade</option>
+    <option value="3000">3000</option>
+    <option value="4000">4000</option>
+    <option value="6000">6000</option>
+  </Form.Control>
+</Form.Group>
+
+
 
               <Button variant="primary" type="submit">
                 Add Lamp
@@ -706,227 +762,217 @@ const Products = () => {
           )}
         </ListGroup.Item>
         <ListGroup.Item>
-          <div>
-            <h1 className="h">My Products</h1>
-            {products.map((product) => (
-              <div className="product" key={product.name}>
-                <h1>{product.name}</h1>
-                <p>Description: {product.description}</p>
-                <p>Price: {product.price}</p>
-                <p>Quantity: {product.quantity}</p>
-                <img
-                  style={{ width: "150px", height: "150px" }}
-                  src={product.imageURL}
-                  alt={product.name}
-                />
-                <Button
-                  class="button"
-                  variant="primary"
-                  onClick={() => handleEdit(product.id)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => handleDelete(product.id, false)}
-                >
-                  Delete
-                </Button>
-              </div>
-            ))}
-          </div>
-        </ListGroup.Item>
-        <ListGroup.Item>
-          <div>
-            <h1 className="h">My Lamps</h1>
+  <div>
+    <h1 className="h">My Products</h1>
+    {products.length > 0 ? (
+      products.map((product) => (
+        <div className="product" key={product.name}>
+          <h1>{product.name}</h1>
+          <p>Description: {product.description}</p>
+          <p>Price: {product.price}</p>
+          <p>Quantity: {product.quantity}</p>
+          <img
+            style={{ width: "150px", height: "150px" }}
+            src={product.imageURL}
+            alt={product.name}
+          />
+         <Button
+  variant="primary"
+  onClick={() => openProductEditModal(product)}
+>
+  Edit
+</Button>
+          <Button
+            variant="primary"
+            onClick={() => handleDelete(product.id, false)}
+          >
+            Delete
+          </Button>
+        </div>
+      ))
+    ) : (
+      <p>No products available.</p>
+    )}
+  </div>
+</ListGroup.Item>
+<ListGroup.Item>
+  <div>
+    <h1 className="h">My Lamps</h1>
+    {lamps.length > 0 ? (
+      lamps.map((lamp) => (
+        <div className="lamp" key={lamp.name}>
+          <h1>{lamp.name}</h1>
+          <p>Description: {lamp.description}</p>
+          <p>Price: {lamp.price}</p>
+          <p>Quantity: {lamp.quantity}</p>
+          <p>watt: {lamp.wattage}</p>
+          <p>shade: {lamp.shade}</p>
+          <img
+            style={{ width: "150px", height: "150px" }}
+            src={lamp.imageURL}
+            alt={lamp.name}
+          />
+ <Button
+  variant="primary"
+  onClick={() => openLampEditModal(lamp)}
+>
+  Edit
+</Button>
+          <Button
+            variant="primary"
+            onClick={() => handleDelete(lamp.name, true)}
+          >
+            Delete
+          </Button>
+        </div>
+      ))
+    ) : (
+      <p>No lamps available.</p>
+    )}
+  </div>
+</ListGroup.Item>
 
-            {lamps.map((lamp) => (
-              <div className="lamp" key={lamp.name}>
-                <h1>{lamp.name}</h1>
-                <p>Description: {lamp.description}</p>
-                <p>Price: {lamp.price}</p>
-                <p>Quantity: {lamp.quantity}</p>
-                <p>watt: {lamp.wattage}</p>
-                <p>shade: {lamp.shade}</p>
-                <img
-                  style={{ width: "150px", height: "150px" }}
-                  src={lamp.imageURL}
-                  alt={lamp.name}
-                />
-                <Button variant="primary" onClick={() => handleEdit(lamp.id)}>
-                  Edit
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => handleDelete(lamp.name, true)}
-                >
-                  Delete
-                </Button>
-              </div>
-            ))}
-          </div>
-        </ListGroup.Item>
       </ListGroup>
+
+
+
+
       {showProductEditModal && selectedProduct && (
-        <Modal show={showProductEditModal} onHide={closeEditModals}>
-          <Modal.Header closeButton>
-            <Modal.Title>Edit Product</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-         
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Product Name</Form.Label>
-              <Form.Control
-                type="text"
-                required
-                value={selectedProduct.name}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    name: e.target.value,
-                  })
-                }
-              />
-                <Form.Control
-                type="text"
-                required
-                value={selectedProduct.description}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    description: e.target.value,
-                  })
-                }
-              />
-                  <Form.Control
-                type="text"
-                required
-                value={selectedProduct.price}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    price: e.target.value,
-                  })
-                }
-              />
-                   <Form.Control
-                type="text"
-                required
-                value={selectedProduct.quantity}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    quantity: e.target.value,
-                  })
-                }
-              />
-              
-              
-            </Form.Group>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={closeEditModals}>
-              Close
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => handleProductEdit(selectedProduct)}
-            >
-              Save Changes
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      )}
-      {showLampEditModal && selectedLamp && (
-        <Modal show={showLampEditModal} onHide={closeEditModals}>
-          <Modal.Header closeButton>
-            <Modal.Title>Edit Lamp</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-      
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Lamp Name</Form.Label>
-              <Form.Control
-                type="text"
-                required
-                value={selectedLamp.name}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    name: e.target.value,
-                  })
-                }
-              />
-                <Form.Control
-                type="text"
-                required
-                value={selectedLamp.description}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    Description: e.target.value,
-                  })
-                }
-              />
-                  <Form.Control
-                type="text"
-                required
-                value={selectedLamp.price}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    Price: e.target.value,
-                  })
-                }
-              />
-                   <Form.Control
-                type="text"
-                required
-                value={selectedLamp.quantity}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    Quantity: e.target.value,
-                  })
-                }
-              />
-                    <Form.Control
-                type="text"
-                required
-                value={selectedLamp.wattage}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    watt: e.target.value,
-                  })
-                }
-              />
-                           <Form.Control
-                type="text"
-                required
-                value={selectedLamp.shade}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    shade: e.target.value,
-                  })
-                }
-              />
-            </Form.Group>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={closeEditModals}>
-              Close
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => handleLampEdit(selectedLamp)}
-            >
-              Save Changes
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      )}
+  <Modal show={showProductEditModal} onHide={closeEditModals}>
+  <Modal.Header closeButton>
+      <Modal.Title>Edit Product</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      <Form.Group className="mb-3" controlId="formBasicEmail">
+        <Form.Label>Product Name</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedProduct.name}
+          onChange={(e) =>
+            setSelectedProduct({ ...selectedProduct, name: e.target.value })
+          }
+        />
+        <Form.Label>Product Description</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedProduct.description}
+          onChange={(e) =>
+            setSelectedProduct({
+              ...selectedProduct,
+              description: e.target.value
+            })
+          }
+        />
+        <Form.Label>Product Price</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedProduct.price}
+          onChange={(e) =>
+            setSelectedProduct({ ...selectedProduct, price: e.target.value })
+          }
+        />
+        <Form.Label>Product Quantity</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedProduct.quantity}
+          onChange={(e) =>
+            setSelectedProduct({ ...selectedProduct, quantity: e.target.value })
+          }
+        />
+      </Form.Group>
+    </Modal.Body>
+    <Modal.Footer>
+      <Button variant="secondary" onClick={closeEditModals}>
+        Close
+      </Button>
+      <Button
+        variant="primary"
+        onClick={() => handleProductEdit(selectedProduct)}
+      >
+        Save Changes
+      </Button>
+    </Modal.Footer>
+  </Modal>
+)}
+
+{showLampEditModal && selectedLamp && (
+  <Modal show={showLampEditModal} onHide={closeEditModals}>
+  <Modal.Header closeButton>
+      <Modal.Title>Edit Lamp</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      <Form.Group className="mb-3" controlId="formBasicEmail">
+        <Form.Label>Lamp Name</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.name}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, name: e.target.value })
+          }
+        />
+        <Form.Label>Lamp Description</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.description}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, description: e.target.value })
+          }
+        />
+        <Form.Label>Lamp Price</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.price}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, price: e.target.value })
+          }
+        />
+        <Form.Label>Lamp Quantity</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.quantity}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, quantity: e.target.value })
+          }
+        />
+        <Form.Label>Lamp Wattage</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.wattage}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, wattage: e.target.value })
+          }
+        />
+        <Form.Label>Lamp Shade</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.shade}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, shade: e.target.value })
+          }
+        />
+      </Form.Group>
+    </Modal.Body>
+    <Modal.Footer>
+      <Button variant="secondary" onClick={closeEditModals}>
+        Close
+      </Button>
+      <Button variant="primary" onClick={() => handleLampEdit(selectedLamp)}>
+        Save Changes
+      </Button>
+    </Modal.Footer>
+  </Modal>
+)}
+
     </>
   );
 };

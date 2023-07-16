@@ -83,7 +83,7 @@ export default function Register({ setUser }) {
         </Form.Group>    
 
         <Form.Group className="mb-3" controlId="formBasicPassword">
-          <Form.Control style={{ border:" 2px solid #593087"}} placeholder="Confirm Password" type="Confirm password" onChange={(e) => setConfirmPassword(e.target.value)} />
+          <Form.Control style={{ border:" 2px solid #593087"}} placeholder="Confirm Password" type="password" onChange={(e) => setConfirmPassword(e.target.value)} />
         </Form.Group>     
         <div className="button-container">
             <Button variant="primary" type="submit">
