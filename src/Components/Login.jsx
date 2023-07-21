@@ -14,12 +14,28 @@ export default function Login({ setUser, setIslogedIn }) {
 
   const checkDetails = async (e) => {
     e.preventDefault();
+    if (email.includes("@allabouthome")) {
+      try {
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+  
+        const userDoc = await firebase.firestore().collection("appadmin").doc(user.uid).get();
+        const userData = userDoc.data();
+  
+        setUser(userData);
+        console.log("Success");
+        setIslogedIn(true);
+        navigate("/sales-dashboard");
+      } catch (error) {
+        console.log("Something error", error);
+      }
 
+    }
+else{
     try {
       const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
       const user = userCredential.user;
 
-      // Fetch custom user data from Firestore
       const userDoc = await firebase.firestore().collection("Admins").doc(user.uid).get();
       const userData = userDoc.data();
 
@@ -30,6 +46,7 @@ export default function Login({ setUser, setIslogedIn }) {
     } catch (error) {
       console.log("Something error", error);
     }
+  }
   }
 
   console.log(email, password)

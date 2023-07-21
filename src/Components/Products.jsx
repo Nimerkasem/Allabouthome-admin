@@ -212,11 +212,11 @@ const Products = () => {
         if (lamp) {
           imageName = lamp.imageName;
           directory = "lamps";
-  
+      
           await adminDocRef.update({
             lamps: firebase.firestore.FieldValue.arrayRemove(lamp),
           });
-  
+      
           await db.collection("alllamps").doc(itemId).delete();
           console.log("lamp deleted");
         }
@@ -232,11 +232,11 @@ const Products = () => {
         if (product) {
           imageName = product.imageName;
           directory = "products";
-  
+      
           await adminDocRef.update({
             products: firebase.firestore.FieldValue.arrayRemove(product),
           });
-  
+      
           await db.collection("allproducts").doc(product.uid).delete();
           console.log("product deleted");
         }
@@ -302,7 +302,7 @@ const Products = () => {
       await imageRef.put(productUploadedImage);
       const downloadURL = await imageRef.getDownloadURL();
       newProduct.imageURL = downloadURL;
-      newProduct.imageName = productUploadedImage.name; // Save the image name
+      newProduct.imageName = productUploadedImage.name;
     }
 
     const adminSnapshot = await adminDocRef.get();
@@ -315,7 +315,7 @@ const Products = () => {
 
     await adminDocRef.update({
       products: productsArray,
-    });
+    });    
 
     await addToCategory(productUID, productCategories);
 
@@ -490,7 +490,6 @@ const Products = () => {
     }
   };
   
-  // Open edit modal for a selected Lamp or Product item from Admin Dashboard page
   const handleEdit = (itemId, isLamp) => {
     console.log("itemId",itemId)
     if (isLamp) {
@@ -788,11 +787,10 @@ const Products = () => {
             src={product.imageURL}
             alt={product.name}
           />
-<Button variant="primary" onClick={() => handleEdit(product.uid, false)}>  Edit </Button>
-          <Button
-            variant="primary"
-            onClick={() => handleDelete(product.id, false)}
-          >
+          <Button variant="primary" onClick={() => handleEdit(product.uid, false)}>
+            Edit 
+          </Button>
+          <Button variant="primary" onClick={() => handleDelete(product.id, false)}>
             Delete
           </Button>
         </div>
@@ -820,11 +818,9 @@ const Products = () => {
             alt={lamp.name}
           />
           <Button variant="primary" onClick={() => handleEdit(lamp.uid, true)}>
-            Edit</Button>
-          <Button
-            variant="primary"
-            onClick={() => handleDelete(lamp.id, false)}
-          >
+            Edit
+          </Button>
+          <Button variant="primary" onClick={() => handleDelete(lamp.id, true)}>
             Delete
           </Button>
         </div>
