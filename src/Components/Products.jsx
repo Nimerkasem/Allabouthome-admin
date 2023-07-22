@@ -72,67 +72,9 @@ const Products = () => {
     }
   };
 
-  const addToCategory = async (itemId, categories) => {
-    try {
-      if (!categories || categories.length === 0) {
-        console.error("Categories array is empty or undefined.");
-        return;
-      }
+ 
 
-      const batch = firebase.firestore().batch();
-      const categoriesRef = db.collection("allCategory");
-
-      const existingCategories = await categoriesRef
-        .where(firebase.firestore.FieldPath.documentId(), "in", categories)
-        .get();
-      const existingCategoryIds = existingCategories.docs.map((doc) => doc.id);
-
-      const newCategories = categories.filter(
-        (category) => !existingCategoryIds.includes(category)
-      );
-      newCategories.forEach((category) => {
-        const newCategoryRef = categoriesRef.doc(category);
-        batch.set(newCategoryRef, { items: [itemId] });
-      });
-
-      existingCategories.forEach((doc) => {
-        const categoryRef = categoriesRef.doc(doc.id);
-        batch.update(categoryRef, {
-          items: firebase.firestore.FieldValue.arrayUnion(itemId),
-        });
-      });
-
-      await batch.commit();
-      console.log("Item added to categories successfully!");
-    } catch (error) {
-      console.error("Error adding item to category:", error);
-    }
-  };
-
-  const addLampToCollection = async (lamp) => {
-    try {
-      const currentUser = firebase.auth().currentUser;
-      const adminUID = currentUser.uid;
-      const currentTime = firebase.firestore.FieldValue.serverTimestamp();
-      const adminSnapshot = await db.collection("Admins").doc(adminUID).get();
-      const adminData = adminSnapshot.data();
-      const adminName = adminData.name;
-      const lampRef = await db.collection("alllamps").add({
-        ...lamp,
-        adminUID: adminUID,
-        adminName: adminName,
-        addedTime: currentTime,
-        updatedTime: currentTime,
-      });
-      await lampRef.update({ uid: lampRef.id });
-      console.log("Lamp added to lamps collection successfully!");
-
-      return lampRef;
-    } catch (error) {
-      console.error("Error adding lamp to lamps collection:", error);
-    }
-  };
-
+  
   const handleProductImageUpload = async (e) => {
     const file = e.target.files[0];
     setProductUploadedImage(file);
@@ -317,7 +259,6 @@ const Products = () => {
       products: productsArray,
     });    
 
-    await addToCategory(productUID, productCategories);
 
     setProductName("");
     setProductDescription("");
@@ -367,17 +308,15 @@ const Products = () => {
         newLamp.imageName=lampUploadedImage.name;
       }
 
-      /*await adminDocRef.update({
+     await adminDocRef.update({
         lamps: firebase.firestore.FieldValue.arrayUnion(newLamp),
       });
 
-      const lampRef = await addLampToCollection(newLamp);
-      await addToCategory(lampRef.id, lampCategories);
-*/
+      
+
       const adminSnapshot = await adminDocRef.get();
       const adminData = adminSnapshot.data();
       const lampsArray = adminData.lamps || []; 
-      const lampRef = await addLampToCollection(newLamp);
       const lampUID = lampRef.id;
       newLamp.uid = lampUID;
       lampsArray.push(newLamp);
@@ -386,7 +325,6 @@ const Products = () => {
         lamps: lampsArray,
       });
       
-      await addToCategory(lampUID, lampCategories);
       setLampName("");
       setLampDescription("");
       setLampPrice("");
