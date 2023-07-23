@@ -1,0 +1,46 @@
+
+.home {
+    display: flex;
+  }
+  
+  sidebar{
+    width: 250px;
+    height: 950px;
+    background: #2d0e4f;
+    color: white;
+    float: left;
+    padding-top: 20px;
+    
+  }
+  .sales-dashboard {
+    flex: 3;
+    padding: 20px;
+  }
+  
+  .admin-commissions {
+    margin-bottom: 30px;
+  }
+  
+  h2 {
+    margin-bottom: 15px;
+  }
+  
+  .user {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+  }
+  
+  .button-containerh {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .sales-dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  

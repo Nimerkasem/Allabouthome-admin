@@ -23,10 +23,10 @@ export default function Register({ setUser }) {
             return;
         }
         
-  //   if (email.includes("@allabouthome")) {
-  //     console.log("Registration with @allabouthome email addresses is not allowed.");
-  //     return;
-  // }
+    if (email.includes("@allabouthome")) {
+      console.log("Registration with @allabouthome email addresses is not allowed.");
+      return;
+  }
 
         try {
             const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
