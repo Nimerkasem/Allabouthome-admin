@@ -6,7 +6,6 @@ import Form from 'react-bootstrap/Form';
 import '../Css/Register.css'; 
 
 
-
 export default function Register({ setUser }) {
     const navigate = useNavigate();
     const [phoneNumber, setPhoneNumber] = useState("");
@@ -23,6 +22,11 @@ export default function Register({ setUser }) {
             console.log("Passwords do not match");
             return;
         }
+        
+  //   if (email.includes("@allabouthome")) {
+  //     console.log("Registration with @allabouthome email addresses is not allowed.");
+  //     return;
+  // }
 
         try {
             const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
