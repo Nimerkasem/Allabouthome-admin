@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import firebase from "../servises/firbase";
 import { useNavigate } from "react-router-dom";
@@ -72,9 +73,67 @@ const Products = () => {
     }
   };
 
- 
+  const addToCategory = async (itemId, categories) => {
+    try {
+      if (!categories || categories.length === 0) {
+        console.error("Categories array is empty or undefined.");
+        return;
+      }
 
-  
+      const batch = firebase.firestore().batch();
+      const categoriesRef = db.collection("allCategory");
+
+      const existingCategories = await categoriesRef
+        .where(firebase.firestore.FieldPath.documentId(), "in", categories)
+        .get();
+      const existingCategoryIds = existingCategories.docs.map((doc) => doc.id);
+
+      const newCategories = categories.filter(
+        (category) => !existingCategoryIds.includes(category)
+      );
+      newCategories.forEach((category) => {
+        const newCategoryRef = categoriesRef.doc(category);
+        batch.set(newCategoryRef, { items: [itemId] });
+      });
+
+      existingCategories.forEach((doc) => {
+        const categoryRef = categoriesRef.doc(doc.id);
+        batch.update(categoryRef, {
+          items: firebase.firestore.FieldValue.arrayUnion(itemId),
+        });
+      });
+
+      await batch.commit();
+      console.log("Item added to categories successfully!");
+    } catch (error) {
+      console.error("Error adding item to category:", error);
+    }
+  };
+
+  const addLampToCollection = async (lamp) => {
+    try {
+      const currentUser = firebase.auth().currentUser;
+      const adminUID = currentUser.uid;
+      const currentTime = firebase.firestore.FieldValue.serverTimestamp();
+      const adminSnapshot = await db.collection("Admins").doc(adminUID).get();
+      const adminData = adminSnapshot.data();
+      const adminName = adminData.name;
+      const lampRef = await db.collection("alllamps").add({
+        ...lamp,
+        adminUID: adminUID,
+        adminName: adminName,
+        addedTime: currentTime,
+        updatedTime: currentTime,
+      });
+      await lampRef.update({ uid: lampRef.id });
+      console.log("Lamp added to lamps collection successfully!");
+
+      return lampRef;
+    } catch (error) {
+      console.error("Error adding lamp to lamps collection:", error);
+    }
+  };
+
   const handleProductImageUpload = async (e) => {
     const file = e.target.files[0];
     setProductUploadedImage(file);
@@ -87,7 +146,6 @@ const Products = () => {
 
   const [adminName, setAdminName] = useState("");
   const [lampUIDs, setLampUIDs] = useState([]);
-
   useEffect(() => {
     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
       if (user) {
@@ -131,79 +189,14 @@ const Products = () => {
     };
   }, []);
 
-  const handleDelete = async (itemId, isLamp) => {
-    console.log(itemId);
-    try {
-      const currentUser = firebase.auth().currentUser;
-      const adminCollectionRef = firebase.firestore().collection("Admins");
-      const adminDocRef = adminCollectionRef.doc(currentUser.uid);
   
-      let imageName = "";
-      let directory = "";
-  
-      if (isLamp) {
-        const adminSnapshot = await adminDocRef.get();
-        const adminData = adminSnapshot.data();
-        const lampsArray = adminData.products || [];
-  
-        const lamp = lampsArray.find(
-          (lamp) => lamp.itemId === itemId);
-        console.log('lampsArray', lampsArray);
-        console.log("lamp", lamp);
-
-        if (lamp) {
-          imageName = lamp.imageName;
-          directory = "lamps";
-      
-          await adminDocRef.update({
-            lamps: firebase.firestore.FieldValue.arrayRemove(lamp),
-          });
-      
-          await db.collection("alllamps").doc(itemId).delete();
-          console.log("lamp deleted");
-        }
-      } else {
-        const adminSnapshot = await adminDocRef.get();
-        const adminData = adminSnapshot.data();
-        const productsArray = adminData.products || [];
-  
-        const product = productsArray.find(
-          (product) => product.itemId === itemId
-        );
-  
-        if (product) {
-          imageName = product.imageName;
-          directory = "products";
-      
-          await adminDocRef.update({
-            products: firebase.firestore.FieldValue.arrayRemove(product),
-          });
-      
-          await db.collection("allproducts").doc(product.uid).delete();
-          console.log("product deleted");
-        }
-      }
-  
-      if (imageName) {
-        const storage = firebase.storage();
-        const adminUid = currentUser.uid;
-        const imagePath = `admin/${adminUid}/${directory}/${imageName}`;
-  
-        await storage.ref().child(imagePath).delete();
-      }
-  
-      console.log("Item deleted successfully!");
-    } catch (error) {
-      console.error("Error deleting item:", error);
-      Products.reset;
-    }
-  };
   
 
   const openProductEditModal = (product) => {
-    setSelectedProduct(product);
     setShowProductEditModal(true);
+    setSelectedProduct(product);
   };
+  
 
   const openLampEditModal = (lamp) => {
     setShowLampEditModal(true);
@@ -217,63 +210,59 @@ const Products = () => {
   };
 
   const handleProductFormSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const newProduct = {
-    name: productName,
-    description: productDescription,
-    price: parseInt(productPrice),
-    quantity: parseInt(productQuantity),
-    imageURL: "",
-    imageName: "",
-    categories: productCategories,
-    uid: "",
-  };
+    const newProduct = {
+      name: productName,
+      description: productDescription,
+      price: parseInt(productPrice),
+      quantity: parseInt(productQuantity),
+      imageURL: "",
+      categories: productCategories,
+      uid: "", 
+    };
 
-  try {
-    const currentUser = firebase.auth().currentUser;
-    const adminCollectionRef = firebase.firestore().collection("Admins");
-    const adminDocRef = adminCollectionRef.doc(currentUser.uid);
-    const storage = firebase.storage();
-    const adminUid = currentUser.uid;
+    try {
+      const currentUser = firebase.auth().currentUser;
+      const adminCollectionRef = firebase.firestore().collection("Admins");
+      const adminDocRef = adminCollectionRef.doc(currentUser.uid);
+      const storage = firebase.storage();
+      const adminUid = currentUser.uid;
+      if (productUploadedImage) {
+        const imageRef = storage
+          .ref()
+          .child(`admin/${adminUid}/products/${productUploadedImage.name}`);
+        await imageRef.put(productUploadedImage);
+        const downloadURL = await imageRef.getDownloadURL();
+        newProduct.imageURL = downloadURL;
+      }
 
-    if (productUploadedImage) {
-      const imageRef = storage
-        .ref()
-        .child(`admin/${adminUid}/products/${productUploadedImage.name}`);
-      await imageRef.put(productUploadedImage);
-      const downloadURL = await imageRef.getDownloadURL();
-      newProduct.imageURL = downloadURL;
-      newProduct.imageName = productUploadedImage.name;
+      const adminSnapshot = await adminDocRef.get();
+      const adminData = adminSnapshot.data();
+      const productsArray = adminData.products || []; 
+      const productRef = await addProductToCollection(newProduct); 
+      const productUID = productRef.id; 
+      newProduct.uid = productUID; 
+      productsArray.push(newProduct); 
+
+      await adminDocRef.update({
+        products: productsArray,
+      });
+
+      await addToCategory(productUID, productCategories);
+
+      setProductName("");
+      setProductDescription("");
+      setProductPrice("");
+      setProductQuantity("");
+      setProductCategories([]);
+      setProductUploadedImage("");
+
+      console.log("Product added successfully!");
+    } catch (error) {
+      console.error("Error adding product:", error);
     }
-
-    const adminSnapshot = await adminDocRef.get();
-    const adminData = adminSnapshot.data();
-    const productsArray = adminData.products || [];
-    const productRef = await addProductToCollection(newProduct);
-    const productUID = productRef.id;
-    newProduct.uid = productUID;
-    productsArray.push(newProduct);
-
-    await adminDocRef.update({
-      products: productsArray,
-    });    
-
-
-    setProductName("");
-    setProductDescription("");
-    setProductPrice("");
-    setProductQuantity("");
-    setProductCategories([]);
-    setProductUploadedImage("");
-
-    console.log("Product added successfully!");
-  } catch (error) {
-    console.error("Error adding product:", error);
-  }
-};
-
-  
+  };
 
   const handleLampFormSubmit = async (e) => {
     e.preventDefault();
@@ -288,7 +277,6 @@ const Products = () => {
       wattage: parseInt(lampWattage),
       shade: parseInt(lampShade),
       uid: "",
-      imageName: "",
     };
 
     try {
@@ -305,25 +293,28 @@ const Products = () => {
         await imageRef.put(lampUploadedImage);
         const downloadURL = await imageRef.getDownloadURL();
         newLamp.imageURL = downloadURL;
-        newLamp.imageName=lampUploadedImage.name;
       }
 
-     await adminDocRef.update({
+      /*await adminDocRef.update({
         lamps: firebase.firestore.FieldValue.arrayUnion(newLamp),
       });
 
-      
-
+      const lampRef = await addLampToCollection(newLamp);
+      await addToCategory(lampRef.id, lampCategories);
+*/
       const adminSnapshot = await adminDocRef.get();
       const adminData = adminSnapshot.data();
       const lampsArray = adminData.lamps || []; 
-      const lampUID = lampRef.id;
+      const lampRef = await addLampToCollection(newLamp);
+      const lampUID = lampRef.id; 
       newLamp.uid = lampUID;
       lampsArray.push(newLamp);
       
       await adminDocRef.update({
         lamps: lampsArray,
       });
+      
+      await addToCategory(lampUID, lampCategories);
       
       setLampName("");
       setLampDescription("");
@@ -339,50 +330,6 @@ const Products = () => {
       console.error("Error adding lamp:", error);
     }
   };
-  const handleProductEdit = async (updatedProductData) => {
-    try {
-      const currentUser = firebase.auth().currentUser;
-      const adminCollectionRef = firebase.firestore().collection("Admins");
-      const adminDocRef = adminCollectionRef.doc(currentUser.uid);
-  
-      const adminSnapshot = await adminDocRef.get();
-      const adminData = adminSnapshot.data();
-      const productsArray = adminData.products || [];
-  
-      const productIndex = productsArray.findIndex(
-        (product) => product.uid === selectedProduct.uid
-      );
-  
-      if (productIndex !== -1) {
-        const updatedProduct = {
-          ...productsArray[productIndex],
-          name: updatedProductData.name,
-          description: updatedProductData.description,
-          price: updatedProductData.price,
-          quantity: updatedProductData.quantity,
-        };
-  
-        productsArray[productIndex] = updatedProduct;
-  
-        await adminDocRef.update({
-          products: productsArray,
-        });
-  
-        await db.collection("allproducts").doc(selectedProduct.uid).update(updatedProduct);
-  
-        setSelectedProduct(updatedProduct);
-        setShowProductEditModal(false);
-  
-        console.log("Product updated successfully!");
-      } else {
-        console.error("Product not found in the admin's products array.");
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
-    }
-  };
-  
-  
   const handleLampEdit = async (updatedLampData) => {
     try {
       const currentUser = firebase.auth().currentUser;
@@ -394,7 +341,7 @@ const Products = () => {
       const lampsArray = adminData.lamps || [];
   
       const lampIndex = lampsArray.findIndex(
-        (lamp) => lamp.uid === selectedLamp.uid
+        (lamp) => lamp.itemId === selectedLamp.itemId
       );
   
       if (lampIndex !== -1) {
@@ -414,9 +361,9 @@ const Products = () => {
           lamps: lampsArray,
         });
   
-        await db.collection("alllamps").doc(selectedLamp.uid).update(updatedLamp);
+        await db.collection("alllamps").doc(selectedLamp.itemId).update(updatedLamp);
   
-        setSelectedLamp(updatedLamp);
+        setSelectedLamp(null);
         setShowLampEditModal(false);
   
         console.log("Lamp updated successfully!");
@@ -428,23 +375,66 @@ const Products = () => {
     }
   };
   
+
+  
+  const handleProductEdit = async (updatedProductData) => {
+    try {
+      const currentUser = firebase.auth().currentUser;
+      const adminCollectionRef = firebase.firestore().collection("Admins");
+      const adminDocRef = adminCollectionRef.doc(currentUser.uid);
+  
+      const adminSnapshot = await adminDocRef.get();
+      const adminData = adminSnapshot.data();
+      const productsArray = adminData.products || [];
+  
+      const productIndex = productsArray.findIndex(
+        (product) => product.itemId === selectedProduct.itemId
+      );
+  
+      if (productIndex !== -1) {
+        const updatedProduct = {
+          ...productsArray[productIndex],
+          name: updatedProductData.name,
+          description: updatedProductData.description,
+          price: updatedProductData.price,
+          quantity: updatedProductData.quantity,
+        };
+  
+        productsArray[productIndex] = updatedProduct;
+  
+        await adminDocRef.update({
+          products: productsArray,
+        });
+  
+        await db.collection("allproducts").doc(selectedProduct.itemId).update(updatedProduct);
+  
+        setSelectedProduct(null);
+        setShowProductEditModal(false);
+  
+        console.log("Product updated successfully!");
+      } else {
+        console.error("Product not found in the admin's products array.");
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
+  };
+  
+  
+  
   const handleEdit = (itemId, isLamp) => {
-    console.log("itemId",itemId)
-    if (isLamp) {
-      const lamp = lamps.find((lamp) => lamp.uid === itemId);
+    const product = products.find((p) => p.itemId === itemId);
+    if (product) {
+      openProductEditModal(product);
+    } else if (isLamp) {
+      const lamp = lamps.find((l) => l.itemId === itemId);
       if (lamp) {
         openLampEditModal(lamp);
-      }
-    } else {
-      const product = products.find((product) => product.uid === itemId);
-      if (product) {
-        openProductEditModal(product);
       }
     }
   };
   
   
-
   return (
     <>
       <ListGroup style={{ border: "red" }}>
@@ -706,31 +696,28 @@ const Products = () => {
             </Form>
           )}
         </ListGroup.Item>
-
-
-
-
         <ListGroup.Item>
   <div>
     <h1 className="h">My Products</h1>
     {products.length > 0 ? (
       products.map((product) => (
-        <div className="product" key={product.uid}>
+        <div className="product" key={product.name}>
           <h1>{product.name}</h1>
           <p>Description: {product.description}</p>
           <p>Price: {product.price}</p>
           <p>Quantity: {product.quantity}</p>
           <img
-            style={{ width: "150px", height: "150px" }}
+            style={{ width: "150px", height: "150px" , marginLeft:"5px" }}
             src={product.imageURL}
             alt={product.name}
           />
-          <Button variant="primary" onClick={() => handleEdit(product.uid, false)}>
-            Edit 
-          </Button>
-          <Button variant="primary" onClick={() => handleDelete(product.id, false)}>
-            Delete
-          </Button>
+         <Button
+  variant="primary"
+  onClick={() => openProductEditModal(product)}
+>
+  Edit
+</Button>
+          
         </div>
       ))
     ) : (
@@ -743,7 +730,7 @@ const Products = () => {
     <h1 className="h">My Lamps</h1>
     {lamps.length > 0 ? (
       lamps.map((lamp) => (
-        <div className="lamp" key={lamp.uid}>
+        <div className="lamp" key={lamp.name}>
           <h1>{lamp.name}</h1>
           <p>Description: {lamp.description}</p>
           <p>Price: {lamp.price}</p>
@@ -751,16 +738,17 @@ const Products = () => {
           <p>watt: {lamp.wattage}</p>
           <p>shade: {lamp.shade}</p>
           <img
-            style={{ width: "150px", height: "150px" }}
+            style={{ width: "150px", height: "150px", marginLeft:"5px" }}
             src={lamp.imageURL}
             alt={lamp.name}
           />
-          <Button variant="primary" onClick={() => handleEdit(lamp.uid, true)}>
-            Edit
-          </Button>
-          <Button variant="primary" onClick={() => handleDelete(lamp.id, true)}>
-            Delete
-          </Button>
+ <Button
+  variant="primary"
+  onClick={() => openLampEditModal(lamp)}
+>
+  Edit
+</Button>
+          
         </div>
       ))
     ) : (
@@ -774,60 +762,129 @@ const Products = () => {
 
 
 
-    {showProductEditModal && selectedProduct && (
-      <Modal show={showProductEditModal} onHide={closeEditModals}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Product</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Group className="mb-3" controlId="formBasicEmail">
-            <Form.Label>Product Name</Form.Label>
-            <Form.Control type="text" required value={selectedProduct.name}
-              onChange={(e) => setSelectedProduct({ ...selectedProduct, name: e.target.value })}/>
-            <Form.Label>Product Description</Form.Label>
-            <Form.Control type="text" required value={selectedProduct.description}
-              onChange={(e) => setSelectedProduct({ ...selectedProduct, description: e.target.value})}/>
-            <Form.Label>Product Price</Form.Label>
-            <Form.Control type="text" required value={selectedProduct.price}
-              onChange={(e) => setSelectedProduct({ ...selectedProduct, price: e.target.value })}/>
-            <Form.Label>Product Quantity</Form.Label>
-            <Form.Control type="text" required value={selectedProduct.quantity}
-             onChange={(e) => setSelectedProduct({ ...selectedProduct, quantity: e.target.value })}/>
-          </Form.Group>
-        </Modal.Body>
-        
-        <Modal.Footer>
-          <Button variant="secondary" onClick={closeEditModals}> Close </Button>
-          <Button variant="primary" onClick={() => handleProductEdit(selectedProduct)}>Save Changes</Button>
-        </Modal.Footer>
-      </Modal>
-    )}
+      {showProductEditModal && selectedProduct && (
+  <Modal show={showProductEditModal} onHide={closeEditModals}>
+  <Modal.Header closeButton>
+      <Modal.Title>Edit Product</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      <Form.Group className="mb-3" controlId="formBasicEmail">
+        <Form.Label>Product Name</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedProduct.name}
+          onChange={(e) =>
+            setSelectedProduct({ ...selectedProduct, name: e.target.value })
+          }
+        />
+        <Form.Label>Product Description</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedProduct.description}
+          onChange={(e) =>
+            setSelectedProduct({
+              ...selectedProduct,
+              description: e.target.value
+            })
+          }
+        />
+        <Form.Label>Product Price</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedProduct.price}
+          onChange={(e) =>
+            setSelectedProduct({ ...selectedProduct, price: e.target.value })
+          }
+        />
+        <Form.Label>Product Quantity</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedProduct.quantity}
+          onChange={(e) =>
+            setSelectedProduct({ ...selectedProduct, quantity: e.target.value })
+          }
+        />
+      </Form.Group>
+    </Modal.Body>
+    <Modal.Footer>
+      <Button variant="secondary" onClick={closeEditModals}>
+        Close
+      </Button>
+      <Button
+        variant="primary"
+        onClick={() => handleProductEdit(selectedProduct)}
+      >
+        Save Changes
+      </Button>
+    </Modal.Footer>
+  </Modal>
+)}
 
-    {showLampEditModal && selectedLamp && (
-      <Modal show={showLampEditModal} onHide={closeEditModals}>
-        <Modal.Header closeButton>
-        <Modal.Title>Edit Lamp</Modal.Title>
-       </Modal.Header>
-      <Modal.Body>
-        <Form.Group className="mb-3" controlId="formBasicEmail">
-          <Form.Label>Lamp Name</Form.Label>
-          <Form.Control type="text" required value={selectedLamp.name}
-            onChange={(e) => setSelectedLamp({ ...selectedLamp, name: e.target.value })}/>
-          <Form.Label>Lamp Description</Form.Label>
-          <Form.Control type="text" required value={selectedLamp.description}
-            onChange={(e) =>setSelectedLamp({ ...selectedLamp, description: e.target.value })}/>
-          <Form.Label>Lamp Price</Form.Label>
-          <Form.Control type="text" required value={selectedLamp.price}
-            onChange={(e) => setSelectedLamp({ ...selectedLamp, price: e.target.value })}/>
-          <Form.Label>Lamp Quantity</Form.Label>
-          <Form.Control type="text" required value={selectedLamp.quantity}
-            onChange={(e) =>setSelectedLamp({ ...selectedLamp, quantity: e.target.value })}/>
-          <Form.Label>Lamp Wattage</Form.Label>
-          <Form.Control type="text" required value={selectedLamp.wattage}
-            onChange={(e) =>setSelectedLamp({ ...selectedLamp, wattage: e.target.value })}/>
-          <Form.Label>Lamp Shade</Form.Label>
-          <Form.Control type="text" required value={selectedLamp.shade}
-            onChange={(e) => setSelectedLamp({ ...selectedLamp, shade: e.target.value })}/>
+{showLampEditModal && selectedLamp && (
+  <Modal show={showLampEditModal} onHide={closeEditModals}>
+  <Modal.Header closeButton>
+      <Modal.Title>Edit Lamp</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      <Form.Group className="mb-3" controlId="formBasicEmail">
+        <Form.Label>Lamp Name</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.name}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, name: e.target.value })
+          }
+        />
+        <Form.Label>Lamp Description</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.description}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, description: e.target.value })
+          }
+        />
+        <Form.Label>Lamp Price</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.price}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, price: e.target.value })
+          }
+        />
+        <Form.Label>Lamp Quantity</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.quantity}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, quantity: e.target.value })
+          }
+        />
+        <Form.Label>Lamp Wattage</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.wattage}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, wattage: e.target.value })
+          }
+        />
+        <Form.Label>Lamp Shade</Form.Label>
+        <Form.Control
+          type="text"
+          required
+          value={selectedLamp.shade}
+          onChange={(e) =>
+            setSelectedLamp({ ...selectedLamp, shade: e.target.value })
+          }
+        />
       </Form.Group>
     </Modal.Body>
     <Modal.Footer>
