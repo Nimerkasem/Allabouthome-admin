@@ -55,6 +55,9 @@ export default function Home({ user }) {
               <Link to="/Products">Manage Products</Link>
             </Button>
             <Button style={{ background: "white" }} variant="primary" size="lg" active>
+              <Link to="/Lamps">Manage Lamps</Link>
+            </Button>
+            <Button style={{ background: "white" }} variant="primary" size="lg" active>
               <Link to="/">SignOut</Link>
             </Button>
           </div>

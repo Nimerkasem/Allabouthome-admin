@@ -4,6 +4,7 @@ import Register from './Register';
 import Home from "./Home";
 import Products from "./Products";
 import SalesDashboard from "./SalesDashboard"; // Import the SalesDashboard component
+import Lamps from "./Lamps";
 
 const AppRoutes = ({ setUser, user, setIslogedIn, isLogedIn }) => {
   return (
@@ -13,6 +14,8 @@ const AppRoutes = ({ setUser, user, setIslogedIn, isLogedIn }) => {
       <Route path='/' element={<Login setUser={setUser} setIslogedIn={setIslogedIn} />} />
       <Route path='/Register' element={<Register setUser={setUser} />} />
       <Route path="/Products" element={<Products setUser={setUser} />} />
+      <Route path="/Lamps" element={<Lamps setUser={setUser} />} />
+
     </Routes>
   );
 };

@@ -39,7 +39,8 @@ export default function Register({ setUser }) {
                 email,
                 name,
                 address,
-                password
+                password,
+                isActive: true,
             };
             await userDocRef.set(newUser);
 
