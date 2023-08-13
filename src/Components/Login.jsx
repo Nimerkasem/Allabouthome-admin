@@ -6,6 +6,8 @@ import Form from 'react-bootstrap/Form';
 import '../Css/Login.css'; 
 import { Image } from 'react-bootstrap';
 import logo from '../assets/logo.png';
+import Cookies from 'js-cookie';
+
 
 export default function Login({ setUser, setIslogedIn }) {
   const navigate = useNavigate();
@@ -38,6 +40,10 @@ else{
 
       const userDoc = await firebase.firestore().collection("Admins").doc(user.uid).get();
       const userData = userDoc.data();
+      if (!userData.isActive) {
+        Cookies.set('loginMessage', 'Cannot log in: User is deactivated for more information please feel free contact us:admin@allabouthome.com ', { expires: 1 }); 
+        return;
+      }
 
       setUser(userData);
       console.log("Success");
@@ -65,16 +71,24 @@ else{
             <Form.Control style={{ border:" 2px solid #593087"}}  placeholder="Enter your Password" type="password" onChange={(e) => setPassword(e.target.value)} />
           </Form.Group>
           <div className="button-containerl">
-            <Button variant="primary" type="submit">
-             Login
-            </Button>
-            <br/>
-            <Button variant="primary" type="submit" onClick={()=>{
-              navigate('/Register');
-            }}>
-             I don't have an account? Register
-            </Button>
-          </div>
+  <Button variant="primary" type="submit">
+    Login
+  </Button>
+  {Cookies.get('loginMessage') && (
+    <div className="login-error">
+      {Cookies.get('loginMessage')}
+    </div>
+  )}
+  <br />
+  <Button
+    variant="primary"
+    onClick={() => {
+      navigate('/Register');
+    }}
+  >
+    I don't have an account? Register
+  </Button>
+</div>
 
         </Form>
       </div>
