@@ -17,6 +17,14 @@
     height: 950px;
     color: #2d0e4f;
     background: white;
+    margin-top: 20px;
+    
+}
+
+.barchart{
+    margin-top: 50px;
+    margin-left: 150px;
+    margin-bottom: 50px;
 }
 
 .user{

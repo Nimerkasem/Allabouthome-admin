@@ -1,0 +1,79 @@
+.container{
+  border:4px solid #4e316e;
+  margin: 20px;
+  min-width: 550px;
+  float: left;
+  min-height: 1 50px;
+  padding: 10px;
+  color: #1C0733;
+  font-family: 'Courier New', Courier, monospace;
+  }
+  
+  .admin-list {
+    list-style: none;
+    padding: 0;
+
+  }
+  
+  .admin-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    border: #1C0733 1px solid;
+    height: 50px;
+    padding: 5px;
+
+  }
+  
+  .admin-email {
+    flex: 1;
+  }
+  
+  .admin-status {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+  
+  .active {
+    background-color: #1C0733;
+    color: rgb(70, 182, 53);
+    margin-right: 10px;
+    flex: 0.3;
+  }
+  
+  .inactive {
+    background-color: #1C0733;
+    color: rgb(240, 17, 17);
+    margin-right: 10px;
+    flex: 0.3;
+  }
+  
+  .activation-button {
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  
+  .activation-button {
+    background-color: #1C0733;
+    color: white;
+    border: none;
+    width: 200px;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .activation-button:hover {
+    background-color: #4e316e;
+  }
+  
+
+
+  

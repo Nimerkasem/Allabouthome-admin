@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import firebase from "../servises/firbase";
-import AdminActivationButton from "./AdminActivationButton"; 
+import AdminActivationButton from "./AdminActivationButton";
+import "../Css/AdminManagement.css";
+import Button from 'react-bootstrap/Button';
+import ListGroup from "react-bootstrap/ListGroup";
+
+
 
 function AdminManagement() {
   const [admins, setAdmins] = useState([]);
@@ -21,20 +26,36 @@ function AdminManagement() {
   }, []);
 
   return (
-    <div>
-      <h1>Admins Management</h1>
-      <ul>
-        {admins.map((admin) => (
-          <li key={admin.id}>
-            {admin.email} - {admin.isActive ? "Active" : "Inactive"}
-            <AdminActivationButton
-              adminId={admin.id}
-              isActive={admin.isActive}
-            />
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+
+    <ListGroup style={{ minWidth:"1218px" }}>
+      <ListGroup.Item>
+        <div className="button-containerp">
+          <br />
+          <Button variant="primary"type="submit"onClick={() => {navigate("/sales-dashboard");}}>Home</Button>
+          <br /> 
+          <Button variant="primary"type="submit"onClick={() => {navigate("/");}}>SignOut</Button> 
+        </div>
+      </ListGroup.Item>
+      </ListGroup>
+    <div className="container">
+    <h1>Admins Management</h1>
+    <ul className="admin-list">
+      {admins.map((admin) => (
+        <li key={admin.id} className="admin-item">
+          <span className="admin-email">{admin.email}</span>
+          <span className={`admin-status ${admin.isActive ? "active" : "inactive"}`}>
+            {admin.isActive ? "Active" : "Inactive"}
+          </span>
+          <AdminActivationButton
+            adminId={admin.id}
+            isActive={admin.isActive}
+          />
+        </li>
+      ))}
+    </ul>
+  </div>
+  </>
   );
 }
 

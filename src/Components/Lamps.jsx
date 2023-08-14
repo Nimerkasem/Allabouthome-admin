@@ -237,6 +237,7 @@ const Lamps = () => {
       const lampIndex = lampsArray.findIndex(
         (lamp) => lamp.itemId === selectedLamp.itemId
       );
+      
   
       if (lampIndex !== -1) {
         const updatedLamp = {

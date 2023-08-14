@@ -235,10 +235,10 @@ const [filteredProducts, setFilteredProducts] = useState(products);
   
       const adminSnapshot = await adminDocRef.get();
       const adminData = adminSnapshot.data();
-      const productsArray = adminData.products || [];
+      const productsArray = [...adminData.products] || [];
   
       const productIndex = productsArray.findIndex(
-        (product) => product.itemId === selectedProduct.itemId
+        (product) => product.uid === selectedProduct.uid
       );
   
       if (productIndex !== -1) {
@@ -256,7 +256,7 @@ const [filteredProducts, setFilteredProducts] = useState(products);
           products: productsArray,
         });
   
-        await db.collection("allproducts").doc(selectedProduct.itemId).update(updatedProduct);
+        await db.collection("allproducts").doc(selectedProduct.uid).update(updatedProduct);
   
         setSelectedProduct(null);
         setShowProductEditModal(false);
@@ -270,12 +270,9 @@ const [filteredProducts, setFilteredProducts] = useState(products);
     }
   };
   
-  const handleEdit = (itemId, isLamp) => {
-    const product = products.find((p) => p.itemId === itemId);
-    if (product) {
-      openProductEditModal(product);
-    }
-  };
+  
+
+  
   
   
 return (

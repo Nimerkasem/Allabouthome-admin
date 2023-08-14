@@ -1,5 +1,7 @@
 import React from "react";
 import firebase from "../servises/firbase";
+import "../Css/AdminManagement.css";
+
 
 function AdminActivationButton({ adminId, isActive }) {
   const toggleActivation = async () => {
@@ -15,9 +17,18 @@ function AdminActivationButton({ adminId, isActive }) {
   };
 
   return (
-    <button onClick={toggleActivation}>
+    <>
+      
+    <div>
+    <button
+      className={`activation-button ${isActive ? "activeB" : "inactiveB"}`}
+      onClick={toggleActivation}
+    >
       {isActive ? "Deactivate Admin" : "Activate Admin"}
     </button>
+    </div>
+    
+    </>
   );
 }
 

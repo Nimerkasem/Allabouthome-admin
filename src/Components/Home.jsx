@@ -64,7 +64,8 @@ export default function Home({ user }) {
         </div>
         <div className='bgdiv'>
           <h1>Welcome back {user.name}</h1>
-          <BarChart width={500} height={300} data={salesData}>
+          <div className='barchart'>
+          <BarChart  width={500} height={300} data={salesData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />
@@ -72,8 +73,10 @@ export default function Home({ user }) {
             <Legend />
             <Bar dataKey="quantityBought" fill="#8884d8" />
           </BarChart>
-          <div>
-            <h2>Total Future Incomes</h2>
+          </div>
+            
+          <h2>Total Future Incomes</h2>
+          <div className='barchart'>
             <PieChart width={400} height={300}>
               <Pie
                 data={bagData}

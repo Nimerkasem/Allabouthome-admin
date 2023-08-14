@@ -82,12 +82,13 @@ const SalesDashboard = () => {
           <h1>{user.name}</h1>
           <Image src={userimg} className="user" alt="user" />
           <div className="button-containerh">
+          <Button style={{ background: "white" }} variant="primary" size="lg" active>
+              <Link to="/admin-management">AdminsManagement</Link>
+            </Button>
             <Button style={{ background: "white" }} variant="primary" size="lg" active>
               <Link to="/">SignOut</Link>
               </Button>
-            <Button style={{ background: "white" }} variant="primary" size="lg" active>
-              <Link to="/admin-management">AdminsManagement</Link>
-            </Button>
+            
           </div>
         </div>
         <div className="sales-dashboard">
