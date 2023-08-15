@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import firebase from "../servises/firbase";
 import { useNavigate } from "react-router-dom";
@@ -19,24 +18,52 @@ const Lamps = () => {
   const [lampShade, setLampShade] = useState("");
   const [lampUploadedImage, setLampUploadedImage] = useState("");
   const [lamps, setLamps] = useState([]);
-  const [showProductForm, setShowProductForm] = useState(false);
   const [showLampForm, setShowLampForm] = useState(false);
-  const [showProductEditModal, setShowProductEditModal] = useState(false);
   const [showLampEditModal, setShowLampEditModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedLamp, setSelectedLamp] = useState(null);
-  const db = firebase.firestore();
-  const navigate = useNavigate();
-  const toggleProductForm = () => {
-    setShowProductForm(!showProductForm);
-  };
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredLamps, setFilteredLamps] = useState(lamps);
 
+  const db = firebase.firestore();
+  const navigate = useNavigate();
   const toggleLampForm = () => {
     setShowLampForm(!showLampForm);
   };
    
+
+  const addLampToCollection = async (lamp) => {
+    try {
+      const currentUser = firebase.auth().currentUser;
+      const adminUID = currentUser.uid;
+      const currentTime = firebase.firestore.FieldValue.serverTimestamp();
+
+      const adminSnapshot = await db.collection("Admins").doc(adminUID).get();
+      const adminData = adminSnapshot.data();
+      const adminName = adminData.name;
+
+      const lampData={
+          ...lamp,
+        adminUID: adminUID,
+        adminName: adminName,
+        addedTime: currentTime,
+        updatedTime: currentTime,
+      };
+
+      const lampRef = await db.collection("alllamps").add(lampData);
+      console.log(lampRef);
+      
+      const lampUID = lampRef.id; 
+      await lampRef.update({ uid: lampUID }); 
+
+      console.log("Lamp added to lamps collection successfully!");
+
+      return lampRef;
+    } catch (error) {
+      console.error("Error adding lamp to lamps collection:", error);
+    }
+  };
+
   const addToCategory = async (itemId, categories) => {
     try {
       if (!categories || categories.length === 0) {
@@ -72,32 +99,7 @@ const Lamps = () => {
     } catch (error) {
       console.error("Error adding item to category:", error);
     }
-  };
-
-  const addLampToCollection = async (lamp) => {
-    try {
-      const currentUser = firebase.auth().currentUser;
-      const adminUID = currentUser.uid;
-      const currentTime = firebase.firestore.FieldValue.serverTimestamp();
-      const adminSnapshot = await db.collection("Admins").doc(adminUID).get();
-      const adminData = adminSnapshot.data();
-      const adminName = adminData.name;
-      const lampRef = await db.collection("alllamps").add({
-        ...lamp,
-        adminUID: adminUID,
-        adminName: adminName,
-        addedTime: currentTime,
-        updatedTime: currentTime,
-      });
-      await lampRef.update({ uid: lampRef.id });
-      console.log("Lamp added to lamps collection successfully!");
-
-      return lampRef;
-    } catch (error) {
-      console.error("Error adding lamp to lamps collection:", error);
-    }
-  };
-
+  };  
 
   const handleLampImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -112,7 +114,7 @@ const Lamps = () => {
   
 
   const [adminName, setAdminName] = useState("");
-  const [lampUIDs, setLampUIDs] = useState([]);
+  //const [lampUIDs, setLampUIDs] = useState([]);
   useEffect(() => {
     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
       if (user) {
@@ -122,30 +124,19 @@ const Lamps = () => {
         const adminUnsubscribe = adminDocRef.onSnapshot((docSnapshot) => {
           const data = docSnapshot.data();
           console.log("data", data);
-          if (data && data.lamps) {
-            const updatedLamps = data.lamps.map((lamp) => {
-              if (lamp.imageURL) {
-                return { ...lamp, imageURL: lamp.imageURL };
-              }
-              return lamp;
-            });
-            const lampUIDs = data.lamps.map((lamp) => lamp.uid);
-
-            setLamps(updatedLamps || []);
-            setLampUIDs(lampUIDs);
+          if (data ) {
+            setLamps(data.lamps || []);
           }
           if (data && data.adminName) {
             setAdminName(data.adminName);
           }
         });
-
         return () => {
           adminUnsubscribe();
         };
       } else {
         setLamps([]);
-        setLampUIDs([]);
-        setAdminName("");
+          setAdminName("");
       }
     });
 
@@ -224,6 +215,7 @@ const Lamps = () => {
       console.error("Error adding lamp:", error);
     }
   };
+
   const handleLampEdit = async (updatedLampData) => {
     try {
       const currentUser = firebase.auth().currentUser;
@@ -232,13 +224,12 @@ const Lamps = () => {
   
       const adminSnapshot = await adminDocRef.get();
       const adminData = adminSnapshot.data();
-      const lampsArray = adminData.lamps || [];
+      const lampsArray = [...adminData.lamps] || [];
   
       const lampIndex = lampsArray.findIndex(
-        (lamp) => lamp.itemId === selectedLamp.itemId
+        (lamp) => lamp.uid === selectedLamp.uid
       );
       
-  
       if (lampIndex !== -1) {
         const updatedLamp = {
           ...lampsArray[lampIndex],
@@ -256,8 +247,8 @@ const Lamps = () => {
           lamps: lampsArray,
         });
   
-        await db.collection("alllamps").doc(selectedLamp.itemId).update(updatedLamp);
-  
+        await db.collection("alllamps").doc(selectedLamp.uid).update(updatedLamp);
+    
         setSelectedLamp(null);
         setShowLampEditModal(false);
   
@@ -269,18 +260,8 @@ const Lamps = () => {
       console.error("Error updating lamp:", error);
     }
   };
-   
   
-  const handleEdit = (itemId, isLamp) => {
-   if (isLamp) {
-      const lamp = lamps.find((l) => l.itemId === itemId);
-      if (lamp) {
-        openLampEditModal(lamp);
-      }
-    }
-  };
-  
-  
+
 return (
   <>
     <ListGroup style={{ minWidth:"1218px" }}>

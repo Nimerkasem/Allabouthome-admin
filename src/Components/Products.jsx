@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import firebase from "../servises/firbase";
 import { useNavigate } from "react-router-dom";
@@ -21,11 +20,8 @@ const Products = () => {
   const [showProductEditModal, setShowProductEditModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-
-  const [searchTerm, setSearchTerm] = useState("");
+const [searchTerm, setSearchTerm] = useState("");
 const [filteredProducts, setFilteredProducts] = useState(products);
-
-
 
   const db = firebase.firestore();
   const navigate = useNavigate();
@@ -116,7 +112,6 @@ const [filteredProducts, setFilteredProducts] = useState(products);
  
 
   const [adminName, setAdminName] = useState("");
-  const [lampUIDs, setLampUIDs] = useState([]);
   useEffect(() => {
     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
       if (user) {
@@ -126,31 +121,18 @@ const [filteredProducts, setFilteredProducts] = useState(products);
         const adminUnsubscribe = adminDocRef.onSnapshot((docSnapshot) => {
           const data = docSnapshot.data();
           console.log("data", data);
-          if (data && data.lamps) {
-            const updatedLamps = data.lamps.map((lamp) => {
-              if (lamp.imageURL) {
-                return { ...lamp, imageURL: lamp.imageURL };
-              }
-              return lamp;
-            });
-            const lampUIDs = data.lamps.map((lamp) => lamp.uid);
-
+          if (data ) {
             setProducts(data.products || []);
-            setLamps(updatedLamps || []);
-            setLampUIDs(lampUIDs);
           }
           if (data && data.adminName) {
             setAdminName(data.adminName);
           }
         });
-
         return () => {
           adminUnsubscribe();
         };
       } else {
         setProducts([]);
-        setLamps([]);
-        setLampUIDs([]);
         setAdminName("");
       }
     });
@@ -191,6 +173,7 @@ const [filteredProducts, setFilteredProducts] = useState(products);
       const adminDocRef = adminCollectionRef.doc(currentUser.uid);
       const storage = firebase.storage();
       const adminUid = currentUser.uid;
+
       if (productUploadedImage) {
         const imageRef = storage
           .ref()
@@ -257,7 +240,7 @@ const [filteredProducts, setFilteredProducts] = useState(products);
         });
   
         await db.collection("allproducts").doc(selectedProduct.uid).update(updatedProduct);
-  
+
         setSelectedProduct(null);
         setShowProductEditModal(false);
   
