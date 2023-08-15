@@ -484,7 +484,7 @@ return (
             />
             <Form.Label>Lamp Price</Form.Label>
             <Form.Control
-             type="text"
+             type="number"
               required
               value={selectedLamp.price}
               onChange={(e) =>
@@ -493,7 +493,7 @@ return (
             />
             <Form.Label>Lamp Quantity</Form.Label>
             <Form.Control
-              type="text"
+              type="number"
               required
               value={selectedLamp.quantity}
               onChange={(e) =>
@@ -502,22 +502,34 @@ return (
             />
             <Form.Label>Lamp Wattage</Form.Label>
             <Form.Control
-              type="text"
+              type="number"
               required
               value={selectedLamp.wattage}
               onChange={(e) =>
                 setSelectedLamp({ ...selectedLamp, wattage: e.target.value })
               } 
             />
-            <Form.Label>Lamp Shade</Form.Label>
+            <Form.Label>Shade</Form.Label>
             <Form.Control
-              type="text"
+              as="select"
               required
-              value={selectedLamp.shade}
-              onChange={(e) =>
-                setSelectedLamp({ ...selectedLamp, shade: e.target.value })
-              } 
-            />
+              value={isNaN(lampShade) ? "" : lampShade}
+              onChange={(e) => {
+                const selectedValue = e.target.value;
+                if (!isNaN(selectedValue)) {
+                  setLampShade(selectedValue);
+                } else {
+                  setLampShade(""); 
+                }
+              }}
+            >
+              <option value="">Select Shade</option>
+              <option value="3000">3000</option>
+              <option value="4000">4000</option>
+              <option value="6000">6000</option>
+            </Form.Control>
+          
+
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>

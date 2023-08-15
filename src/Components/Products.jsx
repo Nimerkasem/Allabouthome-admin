@@ -457,7 +457,7 @@ return (
             />
             <Form.Label>Product Price</Form.Label>
             <Form.Control
-              type="text"
+              type="number"
               required
               value={selectedProduct.price}
               onChange={(e) =>
@@ -469,7 +469,7 @@ return (
             />
             <Form.Label>Product Quantity</Form.Label>
             <Form.Control
-              type="text"
+              type="number"
               required
               value={selectedProduct.quantity}
               onChange={(e) =>

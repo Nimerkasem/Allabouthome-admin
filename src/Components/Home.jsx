@@ -76,24 +76,44 @@ export default function Home({ user }) {
           </div>
             
           <h2>Total Future Incomes</h2>
-          <div className='barchart'>
-            <PieChart width={400} height={300}>
-              <Pie
-                data={bagData}
-                dataKey="amountToSend"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                fill="#8884d8"
-              >
-                {bagData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </div>
+<div className="chart-container">
+  <div className="chart">
+    <PieChart width={400} height={300}>
+      <Pie
+        data={bagData}
+        dataKey="amountToSend"
+        nameKey="name"
+        cx="50%"
+        cy="50%"
+        outerRadius={100}
+        fill="#8884d8"
+      >
+        {bagData.map((entry, index) => (
+          <Cell
+            key={`cell-${index}`}
+            fill={COLORS[index % COLORS.length]}
+          />
+        ))}
+      </Pie>
+      <Tooltip />
+    </PieChart>
+  </div>
+  <div className="color-legend">
+    <h3>Color Legend</h3>
+    <ul>
+      {bagData.map((entry, index) => (
+        <li key={`legend-${index}`}>
+          <span
+            className="color-box"
+            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+          ></span>
+          {entry.name}: {entry.amountToSend}
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
         </div>
       </div>
     </>

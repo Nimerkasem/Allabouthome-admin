@@ -46,3 +46,36 @@
     margin-top: 20px;
     border:  #e0dbe6;;
   }
+
+  .chart-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .chart {
+    flex: 1;
+    margin-left: 150px;
+  }
+  
+  .color-legend {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  .color-box {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  li {
+    margin-bottom: 10px;
+  }
+  
