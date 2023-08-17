@@ -4,11 +4,13 @@ import AdminActivationButton from "./AdminActivationButton";
 import "../Css/AdminManagement.css";
 import Button from 'react-bootstrap/Button';
 import ListGroup from "react-bootstrap/ListGroup";
+import { useNavigate } from "react-router-dom";
 
 
 
 function AdminManagement() {
   const [admins, setAdmins] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const db = firebase.firestore();
@@ -32,9 +34,9 @@ function AdminManagement() {
       <ListGroup.Item>
         <div className="button-containerp">
           <br />
-          <Button variant="primary"type="submit"onClick={() => {navigate("/sales-dashboard");}}>Home</Button>
-          <br /> 
-          <Button variant="primary"type="submit"onClick={() => {navigate("/");}}>SignOut</Button> 
+          <Button variant="primary" type="submit" onClick={() => { navigate("/sales-dashboard"); }}>Home</Button>
+          <br />
+          <Button variant="primary" type="submit" onClick={() => { navigate("/"); }}>SignOut</Button>
         </div>
       </ListGroup.Item>
       </ListGroup>

@@ -41,7 +41,8 @@ else{
       const userDoc = await firebase.firestore().collection("Admins").doc(user.uid).get();
       const userData = userDoc.data();
       if (!userData.isActive) {
-        Cookies.set('loginMessage', 'Cannot log in: User is deactivated for more information please feel free contact us:admin@allabouthome.com ', { expires: 1 }); 
+        alert('Cannot log in: User is deactivated for more information please feel free contact us:admin@allabouthome.com '); 
+    
         return;
       }
 
@@ -74,11 +75,7 @@ else{
   <Button variant="primary" type="submit">
     Login
   </Button>
-  {Cookies.get('loginMessage') && (
-    <div className="login-error">
-      {Cookies.get('loginMessage')}
-    </div>
-  )}
+  
   <br />
   <Button
     variant="primary"
