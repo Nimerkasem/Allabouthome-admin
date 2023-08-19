@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import firebase from "../servises/firbase";
+import firebase from "../services/firebase";
 import { useNavigate } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";

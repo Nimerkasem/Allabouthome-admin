@@ -1,5 +1,5 @@
 import React from "react";
-import firebase from "../servises/firbase";
+import firebase from "../services/firebase";
 import "../Css/AdminManagement.css";
 
 

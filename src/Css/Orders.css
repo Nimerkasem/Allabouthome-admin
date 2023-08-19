@@ -1,0 +1,22 @@
+.deliver-button {
+    background-color: green;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .deliver-button:hover {
+    background-color: darkgreen;
+  }
+  
+  .delivered-button {
+    background-color: black;
+    color: white;
+    border: none;
+    cursor: not-allowed;
+  }
+  
+  .delivered-button:hover {
+    background-color: black;
+  }
+  

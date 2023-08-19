@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import { Image } from 'react-bootstrap';
 import userimg from '../assets/userimg.png';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
-import firebase from '../servises/firbase';
+import firebase from "../services/firebase";
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff6868', '#a17cff'];
 
@@ -56,6 +56,9 @@ export default function Home({ user }) {
             </Button>
             <Button style={{ background: "white" }} variant="primary" size="lg" active>
               <Link to="/Lamps">Manage Lamps</Link>
+            </Button>
+            <Button style={{ background: "white" }} variant="primary" size="lg" active>
+              <Link to="/Orders">Manage Orders</Link>
             </Button>
             <Button style={{ background: "white" }} variant="primary" size="lg" active>
               <Link to="/">SignOut</Link>

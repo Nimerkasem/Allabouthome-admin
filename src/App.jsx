@@ -1,6 +1,6 @@
 import { useState , useEffect } from 'react'
 import './App.css'
-import firebase from './servises/firbase';
+import firebase from './services/firebase';
 import AppRoutes from './Components/AppRoutes';
 
 function App() {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import firebase from '../servises/firbase';
+import firebase from "../services/firebase";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import '../Css/Register.css'; 

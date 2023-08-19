@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import firebase from "../servises/firbase";
+import firebase from "../services/firebase";
 import Button from 'react-bootstrap/Button';
 import { Image } from 'react-bootstrap';
 import userimg from '../assets/userimg.png';

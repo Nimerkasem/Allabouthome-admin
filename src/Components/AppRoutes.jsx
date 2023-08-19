@@ -3,10 +3,10 @@ import Login from './Login';
 import Register from './Register';
 import Home from "./Home";
 import Products from "./Products";
-import AdminManagement from "./AdminManagement"; // Make sure to import AdminManagement
+import AdminManagement from "./AdminManagement"; 
 import SalesDashboard from "./SalesDashboard"; 
-
 import Lamps from "./Lamps";
+import Orders from "./Orders";
 
 const AppRoutes = ({ setUser, user, setIslogedIn, isLogedIn }) => {
   return (
@@ -18,6 +18,7 @@ const AppRoutes = ({ setUser, user, setIslogedIn, isLogedIn }) => {
       <Route path='/Register' element={<Register setUser={setUser} />} />
       <Route path="/Products" element={<Products setUser={setUser} />} />
       <Route path="/Lamps" element={<Lamps setUser={setUser} />} />
+      <Route path="/Orders" element={<Orders setUser={setUser} />} />
 
     </Routes>
   );
