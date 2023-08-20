@@ -1,124 +1,133 @@
 import React, { useState, useEffect } from "react";
 import firebase from '../services/firebase';
+import "../Css/Orders.css";
 
 const Orders = () => {
-  const [orderData, setOrderData] = useState([]);
+  const [orderUIDs, setOrderUIDs] = useState([]);
+  const [ordersData, setOrdersData] = useState([]);
 
-  const fetchOrderData = async () => {
+  const fetchOrdersData = async (currentUserUID) => {
     try {
       const adminCollectionRef = firebase.firestore().collection("Admins");
-      const adminQuerySnapshot = await adminCollectionRef.get();
+      const adminDocRef = adminCollectionRef.doc(currentUserUID);
+      const storeOrdersCollectionRef = adminDocRef.collection("store_orders");
 
-      const orderDataArray = [];
-      adminQuerySnapshot.forEach((adminDoc) => {
-        const storeOrdersCollectionRef = adminDoc.ref.collection("store_orders");
-        storeOrdersCollectionRef.get().then((orderQuerySnapshot) => {
-          orderQuerySnapshot.forEach((orderDoc) => {
-            const orderUID = orderDoc.id;
-            const orderItems = orderDoc.data().items || [];
-            orderDataArray.push({ orderUID, orderItems });
-          });
-          setOrderData(orderDataArray);
+      const orderQuerySnapshot = await storeOrdersCollectionRef.get();
+      const ordersDataArray = [];
+
+      orderQuerySnapshot.forEach((orderDoc) => {
+        ordersDataArray.push({
+          orderUID: orderDoc.id,
+          orderItems: orderDoc.data().items, 
         });
       });
+
+      setOrdersData(ordersDataArray);
     } catch (error) {
-      console.error("Error fetching order data:", error);
+      console.error("Error fetching orders data:", error);
     }
   };
 
   useEffect(() => {
-    fetchOrderData();
+    const currentUser = firebase.auth().currentUser;
+    if (currentUser) {
+      const currentUserUID = currentUser.uid;
+      fetchOrdersData(currentUserUID);
+    }
   }, []);
 
-  const markOrderAsDelivered = async (orderUID, index) => {
+  const handleDelivered = async (orderUID, itemIndex) => {
     try {
-      const adminCollectionRef = firebase.firestore().collection("Admins");
-      const adminQuerySnapshot = await adminCollectionRef.get();
-
-      adminQuerySnapshot.forEach(async (adminDoc) => {
-        const storeOrdersCollectionRef = adminDoc.ref.collection("store_orders");
+      const currentUser = firebase.auth().currentUser;
+      if (currentUser) {
+        const adminCollectionRef = firebase.firestore().collection("Admins");
+        const adminDocRef = adminCollectionRef.doc(currentUser.uid);
+        const storeOrdersCollectionRef = adminDocRef.collection("store_orders");
         const orderDocRef = storeOrdersCollectionRef.doc(orderUID);
-
-        const currentItems = (await orderDocRef.get()).data().items;
-        const updatedItems = [...currentItems];
-        updatedItems[index] = {
-          ...updatedItems[index],
-          delivered: true
-        };
-
-        await orderDocRef.update({
-          items: updatedItems
-        });
-
-        // Refresh the order data after marking as delivered
-        fetchOrderData();
-      });
+  
+        // Get the current order data
+        const orderSnapshot = await orderDocRef.get();
+        if (orderSnapshot.exists) {
+          const orderData = orderSnapshot.data();
+          if (Array.isArray(orderData.items) && itemIndex >= 0 && itemIndex < orderData.items.length) {
+            // Update the 'delivered' attribute for the selected item
+            orderData.items[itemIndex].delivered = true;
+  
+            // Update the order document with the modified item data
+            await orderDocRef.update({
+              items: orderData.items,
+            });
+  
+            // Update the local state or fetch the data again to reflect changes
+            fetchOrdersData(currentUser.uid);
+          }
+        }
+      }
     } catch (error) {
-      console.error("Error marking order as delivered:", error);
+      console.error("Error marking item as delivered:", error);
     }
   };
+  
 
   return (
-    <>
-      <div>
-        <h1>Orders and Items</h1>
-        {orderData.map((order) => (
-          <div style={{border:"2px solid red",marginBottom:"20px"}} key={order.orderUID}>
-            <h2>Order UID: {order.orderUID}</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Index</th>
-                  <th>Image</th>
-                  <th>Item Name</th>
-                  <th>Price</th>
-                  <th>Quantity</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.isArray(order.orderItems) ? (
-                  order.orderItems.map((item, index) => (
-                    <tr key={index}>
-                        <td>{index}</td>
-                        <td>
-                            <img
-                            style={{ width: "150px", height: "150px", marginLeft: "5px" }}
-                            src={item.image} // Assuming the image URL is stored in the 'image' field
-                            alt={item.name} // Assuming 'item.name' is the name of the item
-                        />
-                        </td>
-                        <td>{item.name}</td>
-                        <td>{item.price}</td>
-                        <td>{item.quantity}</td>
-                        <td>{item.delivered ? "Yes" : "No"}</td>
-                        <td>
-                            {!item.delivered ? (
-                            <button
-                                    className="deliver-button"
-                                    onClick={() => markOrderAsDelivered(order.orderUID, index)}
-                            >
-                                Mark Delivered
-                            </button>
-                            ) : (
-                                <button className="delivered-button">Delivered</button>
-                            )}
+    <div className="orders-container">
+      <h1>My Orders</h1>
+      {ordersData.map((order) => (
+        <div className="order-card" key={order.orderUID}>
+          <h2>Order UID: {order.orderUID}</h2>
+          <table className="order-table">
+            <thead>
+              <tr>
+                <th>Index</th>
+                <th>Image</th>
+                <th>Item Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.isArray(order.orderItems) ? (
+                order.orderItems.map((item, index) => (
+                  <tr key={index}>
+  <td>{index}</td>
+  <td>
+    <img
+      style={{ width: "150px", height: "150px", marginLeft: "5px" }}
+      src={item.image} // Assuming the image URL is stored in the 'image' field
+      alt={item.name} // Assuming 'item.name' is the name of the item
+    />
+  </td>
+  <td>{item.name}</td>
+  <td>{item.price}</td>
+  <td>{item.quantity}</td>
+  <td>{item.delivered ? "Yes" : "No"}</td>
+  <td>
+    {!item.delivered ? (
+      <button
+        className="deliver-button"
+        onClick={() => handleDelivered(order.orderUID, index)}
+      >
+        Mark Delivered
+      </button>
+    ) : (
+      <button className="delivered-button">Delivered</button>
+    )}
+  </td>
+</tr>
 
-                            </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6">No items in this order.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        ))}
-      </div>
-    </>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6">No items in this order.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </div>
   );
 };
 

@@ -101,20 +101,6 @@ export default function Home({ user }) {
       <Tooltip />
     </PieChart>
   </div>
-  <div className="color-legend">
-    <h3>Color Legend</h3>
-    <ul>
-      {bagData.map((entry, index) => (
-        <li key={`legend-${index}`}>
-          <span
-            className="color-box"
-            style={{ backgroundColor: COLORS[index % COLORS.length] }}
-          ></span>
-          {entry.name}: {entry.amountToSend}
-        </li>
-      ))}
-    </ul>
-  </div>
 </div>
 
         </div>

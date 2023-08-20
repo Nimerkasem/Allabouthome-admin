@@ -1,22 +1,45 @@
-.deliver-button {
-    background-color: green;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
+.deliver-button{
+  background-color: #1C0733;
+  color: red;
+}
+.delivered-button{
+  background-color: #1C0733;
+  color: #0af30a;
+}
+.delivered-button:hover {
+  background-color: #4e316e;
+}
+.deliver-button:hover {
+  background-color: #4e316e;
+}
+
+
+.orders-container {
+  padding: 20px;
+}
+
+.order-card {
+  border: 4px solid #1C0733;
+  margin-bottom: 20px;
+  padding: 20px;
+}
+
+.order-table {
+  width: 100%;
+  border-collapse: collapse;
   
-  .deliver-button:hover {
-    background-color: darkgreen;
-  }
-  
-  .delivered-button {
-    background-color: black;
-    color: white;
-    border: none;
-    cursor: not-allowed;
-  }
-  
-  .delivered-button:hover {
-    background-color: black;
-  }
-  
+}
+
+.order-table th {
+  background-color: #4e316e;
+  padding: 10px;
+  text-align: left;
+  color: white;
+}
+
+.order-table td {
+  border: 1px solid #4e316e;
+  padding: 10px;
+}
+
+
