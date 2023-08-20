@@ -27,9 +27,7 @@ const Lamps = () => {
 
   const db = firebase.firestore();
   const navigate = useNavigate();
-  const toggleLampForm = () => {
-    setShowLampForm(!showLampForm);
-  };
+  
    
 
   const addLampToCollection = async (lamp) => {

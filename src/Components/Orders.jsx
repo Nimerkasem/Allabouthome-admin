@@ -1,116 +1,110 @@
 import React, { useState, useEffect } from "react";
 import firebase from '../services/firebase';
 import "../Css/Orders.css";
-import Button from 'react-bootstrap/Button';
+import { useNavigate } from 'react-router-dom';
 import ListGroup from "react-bootstrap/ListGroup";
-import { Link } from 'react-router-dom';
+import Button from "react-bootstrap/Button";
 
 
-const Orders = ({ user }) => {
-  const [orderData, setOrderData] = useState([]);
+const Orders = () => {
+  const [ordersData, setOrdersData] = useState([]);
 
-  useEffect(() => {
-    console.log("Current User:", user);
+  const navigate = useNavigate();
 
-    const fetchOrderData = async () => {
-      try {
-        const adminCollectionRef = firebase.firestore().collection("Admins");
-        const currentAdminRef = adminCollectionRef.doc(user.uid);
-
-        console.log("Current Admin Ref:", currentAdminRef.path);
-
-        const storeOrdersCollectionRef = currentAdminRef.collection("store_orders");
-        const orderQuerySnapshot = await storeOrdersCollectionRef.get();
-
-        console.log("Order Query Snapshot:", orderQuerySnapshot.docs.length);
-
-        const orderDataArray = [];
-        orderQuerySnapshot.forEach((orderDoc) => {
-          const orderUID = orderDoc.id;
-          const orderItems = orderDoc.data().items || [];
-          orderDataArray.push({ orderUID, orderItems });
-        });
-
-        console.log("Order Data Array:", orderDataArray);
-
-        setOrderData(orderDataArray);
-      } catch (error) {
-        console.error("Error fetching order data:", error);
-      }
-    };
-
-    fetchOrderData();
-  }, [user]);
-  const markOrderAsDelivered = async (orderUID, index) => {
+  const fetchOrdersData = async (currentUserUID) => {
     try {
       const adminCollectionRef = firebase.firestore().collection("Admins");
-      const adminQuerySnapshot = await adminCollectionRef.get();
-      
-      adminQuerySnapshot.forEach(async (adminDoc) => {
-        const storeOrdersCollectionRef = adminDoc.ref.collection("store_orders");
+      const adminDocRef = adminCollectionRef.doc(currentUserUID);
+      const storeOrdersCollectionRef = adminDocRef.collection("store_orders");
+
+      const orderQuerySnapshot = await storeOrdersCollectionRef.get();
+      const ordersDataArray = [];
+
+      orderQuerySnapshot.forEach((orderDoc) => {
+        ordersDataArray.push({
+          orderUID: orderDoc.id,
+          orderItems: orderDoc.data().items, 
+        });
+      });
+
+      setOrdersData(ordersDataArray);
+    } catch (error) {
+      console.error("Error fetching orders data:", error);
+    }
+  };
+
+  useEffect(() => {
+    const currentUser = firebase.auth().currentUser;
+    if (currentUser) {
+      const currentUserUID = currentUser.uid;
+      fetchOrdersData(currentUserUID);
+    }
+  }, []);
+  const handleDelivered = async (orderUID, itemIndex) => {
+    try {
+      const currentUser = firebase.auth().currentUser;
+      if (currentUser) {
+        const adminCollectionRef = firebase.firestore().collection("Admins");
+        const adminDocRef = adminCollectionRef.doc(currentUser.uid);
+        const storeOrdersCollectionRef = adminDocRef.collection("store_orders");
         const orderDocRef = storeOrdersCollectionRef.doc(orderUID);
-  
-        // Get the current order data
         const orderSnapshot = await orderDocRef.get();
+        
         if (orderSnapshot.exists) {
           const orderData = orderSnapshot.data();
           if (Array.isArray(orderData.items) && itemIndex >= 0 && itemIndex < orderData.items.length) {
-            // Update the 'delivered' attribute for the selected item
             orderData.items[itemIndex].delivered = true;
-  
-            // Update the order document with the modified item data
+            
             await orderDocRef.update({
               items: orderData.items,
             });
   
-            // Update the local state or fetch the data again to reflect changes
+            const userId = orderData.items[itemIndex].userid; 
+            
+            const userOrdersCollectionRef = firebase
+              .firestore()
+              .collection("Users")
+              .doc(userId) 
+              .collection("orders");
+  
+            const userOrderDocRef = userOrdersCollectionRef.doc(orderData.userOrderUid);
+  
+            await userOrderDocRef.update({
+              items: orderData.items, 
+            });
+            
             fetchOrdersData(currentUser.uid);
           }
         }
       }
     } catch (error) {
-      console.error("Error marking order as delivered:", error);
+      console.error("Error marking item as delivered:", error);
     }
   };
   
-  
+
   return (
-    <>
-     <ListGroup style={{ minWidth: "1218px" }}>
+    <ListGroup style={{ minWidth:"1218px" }}>
       <ListGroup.Item>
         <div className="button-containerp">
           <br />
-          <Link to="/home">
-            <Button variant="primary" type="submit">
-              Home
-            </Button>
-          </Link>
+          <Button variant="primary" onClick={() => navigate("/home")}>Home</Button>
           <br />
-          <Link to="/Products">
-            <Button variant="primary" type="submit">
-              Manage Products
-            </Button>
-          </Link>
-          <br />
-          <Link to="/Lamps">
-            <Button variant="primary" type="submit">
-              Manage Lamps
-            </Button>
-          </Link>
-          <br />
-          <Link to="/">
-            <Button variant="primary" type="submit">
-              SignOut
-            </Button>
-          </Link>
+          <Button variant="primary" onClick={() => navigate("/Products")}>Manage Products</Button>
+          <br />  
+          <Button variant="primary" onClick={() => navigate("/Lamps")}>Manage Lamps</Button>
+          <br />  
+          <Button variant="primary" onClick={() => navigate("/")}>SignOut</Button> 
         </div>
       </ListGroup.Item>
+
+
       <ListGroup.Item>
+    
     <div className="orders-container">
-        <h1> My Orders</h1>
-        {orderData.map((order) => (
+      <h1 style={{margin:"50px"}}>My Orders</h1>
+      {ordersData.map((order) => (
         <div className="order-card" key={order.orderUID}>
-          <h2>Order UID: {order.orderUID}</h2>
           <table className="order-table">
             <thead>
               <tr>
@@ -131,8 +125,8 @@ const Orders = ({ user }) => {
   <td>
     <img
       style={{ width: "150px", height: "150px", marginLeft: "5px" }}
-      src={item.image} // Assuming the image URL is stored in the 'image' field
-      alt={item.name} // Assuming 'item.name' is the name of the item
+      src={item.image} 
+      alt={item.name} 
     />
   </td>
   <td>{item.name}</td>
@@ -140,7 +134,7 @@ const Orders = ({ user }) => {
   <td>{item.quantity}</td>
   <td>{item.delivered ? "Yes" : "No"}</td>
   <td>
-    {!item.delivered ? (
+  {!item.delivered ? (
       <button
         className="deliver-button"
         onClick={() => handleDelivered(order.orderUID, index)}
@@ -164,7 +158,9 @@ const Orders = ({ user }) => {
         </div>
       ))}
     </div>
+    </ListGroup.Item>
+    </ListGroup>
   );
 };
 
-export default Orders;
+export default Orders;
