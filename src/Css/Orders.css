@@ -13,7 +13,26 @@
   background-color: #4e316e;
 }
 
+.button-containerp {
+  display: flex;
+  align-items: center;
+  margin: auto;
+  margin-top: 10px; 
+  border: 2px ;
+  width: 900px;
+  
+}
 
+
+.button-containerp Button {
+  margin-bottom: 10px;
+  background-color: #2d0e4f;
+  border:  #1C0733;
+  width: 150px;
+  height: 100px;
+  margin-left: 60px;
+
+}
 .orders-container {
   padding: 20px;
 }

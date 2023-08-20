@@ -269,6 +269,8 @@ return (
           <br />
           <Button variant="primary"type="submit"onClick={() => {navigate("/Lamps");}}>Manage Lamps</Button> 
           <br />  
+          <Button variant="primary"type="submit"onClick={() => {navigate("/Orders");}}>Manage Orders</Button>
+          <br />  
           <Button variant="primary"type="submit"onClick={() => {navigate("/");}}>SignOut</Button> 
          </div>
         </ListGroup.Item>
