@@ -49,32 +49,25 @@ const Orders = ({ user }) => {
       adminQuerySnapshot.forEach(async (adminDoc) => {
         const storeOrdersCollectionRef = adminDoc.ref.collection("store_orders");
         const orderDocRef = storeOrdersCollectionRef.doc(orderUID);
-      
-        // Update the delivered status in store_orders document
-        await orderDocRef.update({
-          items: firebase.firestore.FieldValue.arrayUnion({
-            index,
-            delivered: true
-          })
-        });
-      
-        // Update user's order status
-        const userOrderUid = (await orderDocRef.get()).data().userOrderUid;
-        const userId = (await orderDocRef.get()).data().userid;
-      
-        const userCollectionRef = firebase.firestore().collection("Users");
-        const userDocRef = userCollectionRef.doc(userId);
-      
-        const userOrdersCollectionRef = userDocRef.collection("orders");
-        const userOrderDocRef = userOrdersCollectionRef.doc(userOrderUid);
-      
-        await userOrderDocRef.update({
-          delivered: true
-        });
-      
-        // Refresh the order data after marking as delivered
-        fetchOrderData();
-      });
+  
+        // Get the current order data
+        const orderSnapshot = await orderDocRef.get();
+        if (orderSnapshot.exists) {
+          const orderData = orderSnapshot.data();
+          if (Array.isArray(orderData.items) && itemIndex >= 0 && itemIndex < orderData.items.length) {
+            // Update the 'delivered' attribute for the selected item
+            orderData.items[itemIndex].delivered = true;
+  
+            // Update the order document with the modified item data
+            await orderDocRef.update({
+              items: orderData.items,
+            });
+  
+            // Update the local state or fetch the data again to reflect changes
+            fetchOrdersData(currentUser.uid);
+          }
+        }
+      }
     } catch (error) {
       console.error("Error marking order as delivered:", error);
     }
@@ -118,65 +111,59 @@ const Orders = ({ user }) => {
         {orderData.map((order) => (
         <div className="order-card" key={order.orderUID}>
           <h2>Order UID: {order.orderUID}</h2>
-            <table className="order-table">
-              <thead>
+          <table className="order-table">
+            <thead>
+              <tr>
+                <th>Index</th>
+                <th>Image</th>
+                <th>Item Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.isArray(order.orderItems) ? (
+                order.orderItems.map((item, index) => (
+                  <tr key={index}>
+  <td>{index}</td>
+  <td>
+    <img
+      style={{ width: "150px", height: "150px", marginLeft: "5px" }}
+      src={item.image} // Assuming the image URL is stored in the 'image' field
+      alt={item.name} // Assuming 'item.name' is the name of the item
+    />
+  </td>
+  <td>{item.name}</td>
+  <td>{item.price}</td>
+  <td>{item.quantity}</td>
+  <td>{item.delivered ? "Yes" : "No"}</td>
+  <td>
+    {!item.delivered ? (
+      <button
+        className="deliver-button"
+        onClick={() => handleDelivered(order.orderUID, index)}
+      >
+        Mark Delivered
+      </button>
+    ) : (
+      <button className="delivered-button">Delivered</button>
+    )}
+  </td>
+</tr>
+
+                ))
+              ) : (
                 <tr>
-                  <th>Index</th>
-                  <th>Image</th>
-                  <th>Item Name</th>
-                  <th>Price</th>
-                  <th>Quantity</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <td colSpan="6">No items in this order.</td>
                 </tr>
-              </thead>
-              <tbody>
-                {Array.isArray(order.orderItems) ? (
-                  order.orderItems.map((item, index) => (
-                    <tr key={index}>
-                        <td>{index}</td>
-                        <td>
-                            <img
-                            style={{ width: "150px", height: "150px", marginLeft: "5px" }}
-                            src={item.image} // Assuming the image URL is stored in the 'image' field
-                            alt={item.name} // Assuming 'item.name' is the name of the item
-                        />
-                        </td>
-                        <td>{item.name}</td>
-                        <td>{item.price}</td>
-                        <td>{item.quantity}</td>
-                        <td>{item.delivered ? "Yes" : "No"}</td>
-                        <td>
-                            {!item.delivered ? (
-                              <button
-                                className="deliver-button"
-                                onClick={() => markOrderAsDelivered(order.orderUID, index)}
-                              >
-                                Mark Delivered
-                              </button>
-                            ) : (
-                              <button
-                                className="delivered-button"
-                              >
-                                Delivered
-                              </button>
-                            )}
-                          </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6">No items in this order.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        ))}
-      </div>
-      </ListGroup.Item>
-    </ListGroup>
-    </>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </div>
   );
 };
 
