@@ -44,21 +44,31 @@ const Orders = () => {
         const adminDocRef = adminCollectionRef.doc(currentUser.uid);
         const storeOrdersCollectionRef = adminDocRef.collection("store_orders");
         const orderDocRef = storeOrdersCollectionRef.doc(orderUID);
-  
-        // Get the current order data
         const orderSnapshot = await orderDocRef.get();
+        
         if (orderSnapshot.exists) {
           const orderData = orderSnapshot.data();
           if (Array.isArray(orderData.items) && itemIndex >= 0 && itemIndex < orderData.items.length) {
-            // Update the 'delivered' attribute for the selected item
             orderData.items[itemIndex].delivered = true;
-  
-            // Update the order document with the modified item data
+            
             await orderDocRef.update({
               items: orderData.items,
             });
   
-            // Update the local state or fetch the data again to reflect changes
+            const userId = orderData.items[itemIndex].userid; // Get the userid from the item
+            
+            const userOrdersCollectionRef = firebase
+              .firestore()
+              .collection("Users")
+              .doc(userId) // Use the obtained userid
+              .collection("orders");
+  
+            const userOrderDocRef = userOrdersCollectionRef.doc(orderData.userOrderUid);
+  
+            await userOrderDocRef.update({
+              items: orderData.items, // Update the delivered status in the user's order
+            });
+            
             fetchOrdersData(currentUser.uid);
           }
         }
@@ -95,8 +105,8 @@ const Orders = () => {
   <td>
     <img
       style={{ width: "150px", height: "150px", marginLeft: "5px" }}
-      src={item.image} // Assuming the image URL is stored in the 'image' field
-      alt={item.name} // Assuming 'item.name' is the name of the item
+      src={item.image} 
+      alt={item.name} 
     />
   </td>
   <td>{item.name}</td>
