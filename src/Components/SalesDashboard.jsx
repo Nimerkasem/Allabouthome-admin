@@ -77,8 +77,8 @@ const SalesDashboard = () => {
 
   return (
     <>
-      <div className="home">
-        <div className="sidebar">
+      <div className="home" style={{minWidth:"1150px"}} >
+        <div className="sidebar" style={{marginRight:"200px"}}>
           <h1>{user.name}</h1>
           <Image src={userimg} className="user" alt="user" />
           <div className="button-containerh">
@@ -91,10 +91,10 @@ const SalesDashboard = () => {
             
           </div>
         </div>
-        <div className="sales-dashboard">
+        <div className="sales-dashboard" style={{ marginTop:"100px"}}>
       {adminsData.map((adminData, index) => (
-        <div key={index} className="admin-commissions">
-          <h2>{adminData.adminName}'s Commissions</h2>
+        <div  key={index} className="admin-commissions">
+          <h2 >{adminData.adminName}'s Commissions</h2>
           <BarChart width={500} height={300} data={adminData.commissionsData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="id" />

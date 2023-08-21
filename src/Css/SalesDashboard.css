@@ -1,9 +1,10 @@
 
 .home {
     display: flex;
+
   }
   
-  sidebar{
+  .sidebar{
     width: 250px;
     height: 950px;
     background: #2d0e4f;
